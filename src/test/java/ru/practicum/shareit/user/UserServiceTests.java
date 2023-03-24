@@ -14,7 +14,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 public class UserServiceTests {
 
-    private UserStorage userStorage = Mockito.mock(UserStorage.class);
+    private final UserStorage userStorage = Mockito.mock(UserStorage.class);
     private UserService userService;
     private User testUser1;
     private User testUser2;
@@ -56,11 +56,15 @@ public class UserServiceTests {
 
     @Test
     public void updateTest() {
-        Mockito.when(userStorage.update(testUser2)).thenReturn(testUser2);
+        testUser1.setId(1L);
+        Mockito.when(userStorage.findById(1L)).thenReturn(testUser1);
+        Mockito.when(userStorage.update(testUser1)).thenReturn(testUser1);
 
-        User actual = userService.update(testUser2);
+        testUser1.setName("updatedName");
+        testUser1.setEmail("updatedemail@example.com");
+        User actual = userService.update(testUser1);
 
-        assertThat(actual).isEqualTo(testUser2);
+        assertThat(actual).isEqualTo(testUser1);
     }
 
     @Test
