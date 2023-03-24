@@ -7,6 +7,7 @@ import ru.practicum.shareit.user.model.User;
 import ru.practicum.shareit.user.service.UserService;
 import ru.practicum.shareit.user.service.UserServiceImpl;
 import ru.practicum.shareit.user.storage.UserStorage;
+import ru.practicum.shareit.util.exception.NotFoundException;
 
 import java.util.List;
 
@@ -75,7 +76,7 @@ public class UserServiceTests {
 
         userService.delete(1L);
 
-        assertThrows(RuntimeException.class, () -> userService.findById(1L)); // todo change to exception throwing
+        assertThrows(NotFoundException.class, () -> userService.findById(1L));
     }
 
     private void testInit() {

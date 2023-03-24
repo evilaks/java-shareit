@@ -4,6 +4,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import ru.practicum.shareit.user.model.User;
 import ru.practicum.shareit.user.storage.UserStorage;
+import ru.practicum.shareit.util.exception.NotFoundException;
+import ru.practicum.shareit.util.exception.ValidationException;
 
 import java.util.List;
 
@@ -17,7 +19,7 @@ public class UserServiceImpl implements UserService {
     public User findById(long userId) {
         if (this.doesExist(userId)) {
             return userStorage.findById(userId);
-        } else throw new RuntimeException(); // todo make exception handler 404
+        } else throw new NotFoundException("User with id=" + userId + " not found");
     }
 
     @Override
@@ -29,7 +31,7 @@ public class UserServiceImpl implements UserService {
     public User add(User user) {
         if (this.isValidUser(user)) {
             return userStorage.add(user);
-        } else throw new RuntimeException(); // todo make exception handler 400
+        } else throw new ValidationException("Invalid user object received");
     }
 
     @Override
@@ -37,15 +39,15 @@ public class UserServiceImpl implements UserService {
         if (this.isValidUser(user)) {
             if (this.doesExist(user.getId())) {
                 return userStorage.update(user);
-            } else throw new RuntimeException(); // todo make exception handler 404
-        } else throw new RuntimeException(); // todo make exception handler 400
+            } else throw new NotFoundException("User with id=" + user.getId() + " not found");
+        } else throw new ValidationException("Invalid user object received");
     }
 
     @Override
     public void delete(long userId) {
         if (this.doesExist(userId)) {
             userStorage.delete(userId);
-        } else throw new RuntimeException(); // todo make exception handler 404
+        } else throw new NotFoundException("User with id=" + userId + " not found");
     }
 
     private boolean isValidUser(User user) {
