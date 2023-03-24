@@ -11,6 +11,7 @@ import ru.practicum.shareit.user.storage.UserStorage;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 public class UserServiceTests {
 
@@ -74,7 +75,7 @@ public class UserServiceTests {
 
         userService.delete(1L);
 
-        assertThat(userService.findById(1L)).isNull(); // todo change to exception throwing
+        assertThrows(RuntimeException.class, () -> userService.findById(1L)); // todo change to exception throwing
     }
 
     private void testInit() {
