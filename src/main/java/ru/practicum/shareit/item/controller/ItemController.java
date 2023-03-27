@@ -1,17 +1,54 @@
 package ru.practicum.shareit.item.controller;
 
 import lombok.RequiredArgsConstructor;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+import ru.practicum.shareit.item.dto.ItemDto;
+import ru.practicum.shareit.item.service.ItemService;
 
-/**
- * TODO Sprint add-controllers.
- */
+import java.util.ArrayList;
+import java.util.List;
+
 @RestController
 @RequestMapping("/items")
 @RequiredArgsConstructor
 public class ItemController {
-}
+
+    private final ItemService itemService;
+
+    @PostMapping()
+    public ItemDto addItem(@RequestHeader(value = "X-Sharer-User-Id") Long ownerId, @RequestBody ItemDto itemDto) {
+        // todo add service
+        return itemDto;
+    }
+
+    @PatchMapping("/{itemId}")
+    public ItemDto updateItem(@RequestHeader(value = "X-Sharer-User-Id") Long ownerId,
+                              @RequestBody ItemDto itemDto,
+                              @PathVariable Long itemId) {
+        // todo update service
+        return itemDto;
+    }
+
+    @GetMapping
+    public List<ItemDto> findAllItems(@RequestHeader(value = "X-Sharer-User-Id") Long userId) {
+        // todo find all service
+        return new ArrayList<>();
+    }
+
+    @GetMapping("/{itemId}")
+    public ItemDto findItemById(@RequestHeader(value = "X-Sharer-User-Id") Long userId,
+                                @PathVariable Long itemId) {
+        // todo find by id service
+        return null;
+    }
+
+    @GetMapping("/search")
+    public List<ItemDto> searchItems(@RequestHeader(value = "X-Sharer-User-Id") Long userId,
+                                     @RequestParam String text) {
+        // todo search service
+        return new ArrayList<>();
+    }
+ }
 
 /* todo
 

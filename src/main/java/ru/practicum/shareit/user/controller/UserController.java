@@ -33,7 +33,7 @@ public class UserController {
     }
 
     @GetMapping()
-    public List<User> findAll() {
+    public List<User> findAllUsers() {
         log.debug("Received GET request to /users endpoint");
         return userService.findAll();
     }
