@@ -1,16 +1,54 @@
 package ru.practicum.shareit.user.controller;
 
 import lombok.RequiredArgsConstructor;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.web.bind.annotation.*;
+import ru.practicum.shareit.user.model.User;
+import ru.practicum.shareit.user.service.UserService;
+
+import javax.validation.Valid;
+import java.util.List;
 
 /**
  * TODO Sprint add-controllers.
  */
+@Slf4j
 @RestController
 @RequestMapping(path = "/users")
 @RequiredArgsConstructor
 public class UserController {
+
+    private final UserService userService;
+
+    @PostMapping()
+    public User addUser(@RequestBody @Valid User user) {
+        log.debug("Received POST request to /users endpoint with User-object {}", user);
+        return userService.add(user);
+    }
+
+    @PatchMapping("/{userId}")
+    public User updateUser(@PathVariable Long userId, @RequestBody User user) {
+        log.debug("Received PATCH request to /users/{} endpoint with User-object {}", userId, user);
+        return userService.update(userId, user);
+    }
+
+    @GetMapping()
+    public List<User> findAll() {
+        log.debug("Received GET request to /users endpoint");
+        return userService.findAll();
+    }
+
+    @GetMapping("/{userId}")
+    public User findUserById(@PathVariable Long userId) {
+        log.debug("Received GET request to /users/{} endpoint", userId);
+        return userService.findById(userId);
+    }
+
+    @DeleteMapping("/{userId}")
+    public void deleteUserById(@PathVariable Long userId) {
+        log.debug("Received DELETE request to /users/{} endpoint", userId);
+        userService.delete(userId);
+    }
 }
 
 /*  todo

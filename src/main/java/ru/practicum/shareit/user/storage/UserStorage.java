@@ -12,7 +12,7 @@ public interface UserStorage {
 
     User add(User user);
 
-    User update(User user);
+    User update(long userId, User user);
 
     void delete(long userId);
 }

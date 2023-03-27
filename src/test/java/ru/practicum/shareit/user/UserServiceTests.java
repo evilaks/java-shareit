@@ -60,11 +60,11 @@ public class UserServiceTests {
     public void updateTest() {
         testUser1.setId(1L);
         Mockito.when(userStorage.findById(1L)).thenReturn(testUser1);
-        Mockito.when(userStorage.update(testUser1)).thenReturn(testUser1);
+        Mockito.when(userStorage.update(1L, testUser1)).thenReturn(testUser1);
 
         testUser1.setName("updatedName");
         testUser1.setEmail("updatedemail@example.com");
-        User actual = userService.update(testUser1);
+        User actual = userService.update(1L, testUser1);
 
         assertThat(actual).isEqualTo(testUser1);
     }

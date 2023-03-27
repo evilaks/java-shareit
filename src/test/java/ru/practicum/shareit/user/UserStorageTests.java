@@ -60,7 +60,7 @@ public class UserStorageTests {
         testUser1.setName("updated_name");
         testUser1.setEmail("updatedemail@example.com");
 
-        userStorage.update(testUser1);
+        userStorage.update(1L, testUser1);
 
         User actual = userStorage.findById(1L);
 
