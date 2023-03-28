@@ -75,7 +75,7 @@ public class UserServiceTests {
 
     @Test
     public void deleteTest() {
-        Mockito.when(userStorage.findById(1L)).thenReturn(testUser1, null);  // todo change to exception
+        Mockito.when(userStorage.findById(1L)).thenReturn(testUser1, null);
         Mockito.doNothing().when(userStorage).delete(1L);
 
         userService.delete(1L);
