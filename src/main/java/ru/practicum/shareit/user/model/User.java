@@ -6,9 +6,6 @@ import lombok.Data;
 import javax.validation.constraints.Email;
 import javax.validation.constraints.NotBlank;
 
-/**
- * TODO Sprint add-controllers.
- */
 
 @Data
 @Builder
@@ -20,10 +17,3 @@ public class User {
     private String email;
 }
 
-/*
-    todo
-
-    Сделать преобразование в dto (хз, зачем, может потом пригодится)
-
-    Сделать мапперы
- */

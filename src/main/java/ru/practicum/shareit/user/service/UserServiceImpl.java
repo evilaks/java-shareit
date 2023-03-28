@@ -2,6 +2,8 @@ package ru.practicum.shareit.user.service;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import ru.practicum.shareit.user.dto.UserDto;
+import ru.practicum.shareit.user.dto.UserDtoMapper;
 import ru.practicum.shareit.user.model.User;
 import ru.practicum.shareit.user.storage.UserStorage;
 import ru.practicum.shareit.util.exception.BadRequestException;
@@ -10,6 +12,7 @@ import ru.practicum.shareit.util.exception.NotFoundException;
 
 import java.util.List;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -18,45 +21,48 @@ public class UserServiceImpl implements UserService {
     private final UserStorage userStorage;
 
     @Override
-    public User findById(long userId) {
+    public UserDto findById(long userId) {
         if (this.doesExist(userId)) {
-            return userStorage.findById(userId);
+            return UserDtoMapper.toUserDto(userStorage.findById(userId));
         } else throw new NotFoundException("User with id=" + userId + " not found");
     }
 
     @Override
-    public List<User> findAll() {
-        return userStorage.findAll();
+    public List<UserDto> findAll() {
+        return userStorage.findAll().stream()
+                .map(UserDtoMapper::toUserDto)
+                .collect(Collectors.toList());
     }
 
     @Override
-    public User add(User user) {
-        if (this.isValidUser(user)) {
-            if (this.haveNoConflicts(user)) {
-                return userStorage.add(user);
+    public UserDto add(UserDto userDto) {
+        if (this.isValidUser(userDto)) {
+            if (this.haveNoConflicts(userDto)) {
+                User userToAdd = UserDtoMapper.toUser(userDto);
+                return UserDtoMapper.toUserDto(userStorage.add(userToAdd));
             } else throw new ConflictException("User has conflict with existing data");
         } else throw new BadRequestException("Invalid user object received");
     }
 
     @Override
-    public User update(Long userId, User user) {
+    public UserDto update(Long userId, UserDto userDto) {
         User userToUpdate = userStorage.findById(userId);
 
         if (userToUpdate != null) {
 
-                if (user.getEmail() != null) {
-                    if (this.haveNoConflicts(user) || userToUpdate.getEmail().equals(user.getEmail())) {
-                        if (this.isValidEmail(user.getEmail())) {
-                            userToUpdate.setEmail(user.getEmail());
+                if (userDto.getEmail() != null) {
+                    if (this.haveNoConflicts(userDto) || userToUpdate.getEmail().equals(userDto.getEmail())) {
+                        if (this.isValidEmail(userDto.getEmail())) {
+                            userToUpdate.setEmail(userDto.getEmail());
                         } else throw new BadRequestException("Invalid email");
                     } else throw new ConflictException("Email conflict found");
                 }
 
-                if (user.getName() != null) {
-                    userToUpdate.setName(user.getName());
+                if (userDto.getName() != null) {
+                    userToUpdate.setName(userDto.getName());
                 }
 
-                return userStorage.update(userId, userToUpdate);
+                return UserDtoMapper.toUserDto(userStorage.update(userId, userToUpdate));
 
         } else throw new NotFoundException("User with id=" + userId + " not found");
     }
@@ -68,28 +74,28 @@ public class UserServiceImpl implements UserService {
         } else throw new NotFoundException("User with id=" + userId + " not found");
     }
 
-    private boolean isValidUser(User user) {
+    private boolean isValidUser(UserDto userDto) {
 
         // check if new user has proper username
-        if (user.getName() == null || user.getName().isBlank() || user.getName().isEmpty()) {
+        if (userDto.getName() == null || userDto.getName().isBlank() || userDto.getName().isEmpty()) {
             return false;
         }
 
         // check if new user has proper email
-        if (user.getEmail() == null || user.getEmail().isBlank() || user.getName().isEmpty()) {
+        if (userDto.getEmail() == null || userDto.getEmail().isBlank() || userDto.getName().isEmpty()) {
             return false;
         }
 
         return true;
     }
 
-    private boolean haveNoConflicts(User user) {
+    private boolean haveNoConflicts(UserDto userDto) {
 
         // check if email is already exist
         return userStorage.findAll()
                 .stream()
                 .map(User::getEmail)
-                .noneMatch(email -> email.equals(user.getEmail()));
+                .noneMatch(email -> email.equals(userDto.getEmail()));
     }
 
     private boolean doesExist(Long userId) {

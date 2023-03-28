@@ -3,6 +3,7 @@ package ru.practicum.shareit.user;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
+import ru.practicum.shareit.user.dto.UserDto;
 import ru.practicum.shareit.user.model.User;
 import ru.practicum.shareit.user.service.UserService;
 import ru.practicum.shareit.user.service.UserServiceImpl;
@@ -20,6 +21,7 @@ public class UserServiceTests {
     private UserService userService;
     private User testUser1;
     private User testUser2;
+    private UserDto testUserDto1;
 
 
     @BeforeEach
@@ -33,7 +35,7 @@ public class UserServiceTests {
 
         Mockito.when(userStorage.findById(1L)).thenReturn(testUser1);
 
-        User actual = userService.findById(1L);
+        UserDto actual = userService.findById(1L);
 
         assertThat(actual).isNotNull();
     }
@@ -42,7 +44,7 @@ public class UserServiceTests {
     public void findAllTest() {
         Mockito.when(userStorage.findAll()).thenReturn(List.of(testUser1, testUser2));
 
-        List<User> actual = userService.findAll();
+        List<UserDto> actual = userService.findAll();
 
         assertThat(actual).size().isEqualTo(2);
     }
@@ -51,7 +53,7 @@ public class UserServiceTests {
     public void addTest() {
         Mockito.when(userStorage.add(testUser1)).thenReturn(testUser1);
 
-        User actual = userService.add(testUser1);
+        UserDto actual = userService.add(testUserDto1);
 
         assertThat(actual).isNotNull();
     }
@@ -64,9 +66,11 @@ public class UserServiceTests {
 
         testUser1.setName("updatedName");
         testUser1.setEmail("updatedemail@example.com");
-        User actual = userService.update(1L, testUser1);
+        UserDto actual = userService.update(1L, testUserDto1);
 
-        assertThat(actual).isEqualTo(testUser1);
+        assertThat(actual).hasFieldOrPropertyWithValue("name", testUser1.getName())
+                .hasFieldOrPropertyWithValue("email", testUser1.getEmail());
+
     }
 
     @Test
@@ -89,6 +93,12 @@ public class UserServiceTests {
                 .name("second_username")
                 .email("seconduser@example.com")
                 .build();
+
+        testUserDto1 = UserDto.builder()
+                .name("username")
+                .email("user@example.com")
+                .build();
+
     }
 
 }
