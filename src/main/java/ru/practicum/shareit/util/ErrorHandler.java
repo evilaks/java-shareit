@@ -7,10 +7,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
-import ru.practicum.shareit.util.exception.BadRequestException;
-import ru.practicum.shareit.util.exception.ConflictException;
-import ru.practicum.shareit.util.exception.NotFoundException;
-import ru.practicum.shareit.util.exception.ValidationException;
+import ru.practicum.shareit.util.exception.*;
 
 @Slf4j
 @RestControllerAdvice
@@ -41,6 +38,13 @@ public class ErrorHandler {
     @ResponseStatus(HttpStatus.CONFLICT)
     public ErrorResponse handleConflictException(final ConflictException e) {
         log.warn("Conflict exception caught");
+        return new ErrorResponse(e.getMessage());
+    }
+
+    @ExceptionHandler(NotAllowedException.class)
+    @ResponseStatus(HttpStatus.FORBIDDEN)
+    public ErrorResponse handleNotAllowedException(final NotAllowedException e) {
+        log.warn("NotAllowed exception caught");
         return new ErrorResponse(e.getMessage());
     }
 

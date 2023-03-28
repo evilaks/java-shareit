@@ -13,7 +13,7 @@ public interface ItemStorage {
 
     Item add(Item item);
 
-    Item update(long itemId, Item user);
+    Item update(long itemId, Item item);
 
     void delete(long itemId);
 }

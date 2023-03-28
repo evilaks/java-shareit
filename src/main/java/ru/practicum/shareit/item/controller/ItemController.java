@@ -1,6 +1,7 @@
 package ru.practicum.shareit.item.controller;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.shareit.item.dto.ItemDto;
 import ru.practicum.shareit.item.service.ItemService;
@@ -8,6 +9,7 @@ import ru.practicum.shareit.item.service.ItemService;
 import java.util.ArrayList;
 import java.util.List;
 
+@Slf4j
 @RestController
 @RequestMapping("/items")
 @RequiredArgsConstructor
@@ -17,36 +19,44 @@ public class ItemController {
 
     @PostMapping()
     public ItemDto addItem(@RequestHeader(value = "X-Sharer-User-Id") Long ownerId, @RequestBody ItemDto itemDto) {
-        // todo add service
-        return itemDto;
+        log.debug("Received POST request to /items endpoint with userId={} and {}", ownerId, itemDto);
+        return itemService.add(ownerId, itemDto);
     }
 
     @PatchMapping("/{itemId}")
     public ItemDto updateItem(@RequestHeader(value = "X-Sharer-User-Id") Long ownerId,
                               @RequestBody ItemDto itemDto,
                               @PathVariable Long itemId) {
-        // todo update service
-        return itemDto;
+        log.debug("Received PATCH request to /items/{} endpoint with userId={} and {}", itemId, ownerId, itemDto);
+        return itemService.update(ownerId, itemId, itemDto);
     }
 
     @GetMapping
     public List<ItemDto> findAllItems(@RequestHeader(value = "X-Sharer-User-Id") Long userId) {
-        // todo find all service
-        return new ArrayList<>();
+        log.debug("Received GET request to /items endpoint with userId={}", userId);
+        return itemService.findAll(userId);
     }
 
     @GetMapping("/{itemId}")
     public ItemDto findItemById(@RequestHeader(value = "X-Sharer-User-Id") Long userId,
                                 @PathVariable Long itemId) {
-        // todo find by id service
-        return null;
+        log.debug("Received GET request to /items/{} endpoint with userId={}", itemId, userId);
+        return itemService.findById(itemId, userId);
     }
 
     @GetMapping("/search")
     public List<ItemDto> searchItems(@RequestHeader(value = "X-Sharer-User-Id") Long userId,
                                      @RequestParam String text) {
+        log.debug("Received GET request to /search endpoint with userId={} and text-param={}", userId, text);
         // todo search service
         return new ArrayList<>();
+    }
+
+    @DeleteMapping("/{itemId}")
+    public void deleteItemById(@RequestHeader(value = "X-Sharer-User-Id") Long userId,
+                               @PathVariable Long itemId) {
+        log.debug("Received DELETE request to /items/{} endpoint with userId={}", itemId, userId);
+        itemService.delete(userId, itemId);
     }
  }
 
