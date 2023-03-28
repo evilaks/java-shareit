@@ -33,7 +33,7 @@ public class ItemServiceImpl implements ItemService {
     @Override
     public List<ItemDto> findAll(long userId) {
         userService.findById(userId); // throws 404 if user not found
-        return itemStorage.findAll().stream()
+        return itemStorage.findAllByOwnerId(userId).stream()
                 .map(ItemDtoMapper::toItemDto)
                 .collect(Collectors.toList());
     }
