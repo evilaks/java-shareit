@@ -11,7 +11,7 @@ import ru.practicum.shareit.util.exception.NotAllowedException;
 import ru.practicum.shareit.util.exception.NotFoundException;
 import ru.practicum.shareit.util.exception.ValidationException;
 
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -61,6 +61,16 @@ public class ItemServiceImpl implements ItemService {
         if (itemDto.getAvailable() != null) itemToUpdate.setIsAvailable(itemDto.getAvailable());
 
         return ItemDtoMapper.toItemDto(itemStorage.update(itemId, itemToUpdate));
+    }
+
+    @Override
+    public List<ItemDto> search(long userId, String request) {
+        userService.findById(userId); // throws 404 if user not found
+        if (request.isBlank()) return new ArrayList<>();
+        return itemStorage.search(request).stream()
+                .map(ItemDtoMapper::toItemDto)
+                .sorted(Comparator.comparing(ItemDto::getId))
+                .collect(Collectors.toList());
     }
 
     @Override

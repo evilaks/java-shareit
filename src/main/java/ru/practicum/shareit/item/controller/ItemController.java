@@ -6,7 +6,6 @@ import org.springframework.web.bind.annotation.*;
 import ru.practicum.shareit.item.dto.ItemDto;
 import ru.practicum.shareit.item.service.ItemService;
 
-import java.util.ArrayList;
 import java.util.List;
 
 @Slf4j
@@ -46,10 +45,10 @@ public class ItemController {
 
     @GetMapping("/search")
     public List<ItemDto> searchItems(@RequestHeader(value = "X-Sharer-User-Id") Long userId,
-                                     @RequestParam String text) {
+                                    @RequestParam String text) {
         log.debug("Received GET request to /search endpoint with userId={} and text-param={}", userId, text);
-        // todo search service
-        return new ArrayList<>();
+
+        return itemService.search(userId, text);
     }
 
     @DeleteMapping("/{itemId}")

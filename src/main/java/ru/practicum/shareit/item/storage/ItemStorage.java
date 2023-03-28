@@ -3,13 +3,14 @@ package ru.practicum.shareit.item.storage;
 import ru.practicum.shareit.item.model.Item;
 
 import java.util.List;
+import java.util.Set;
 
 public interface ItemStorage {
     List<Item> findAllByOwnerId(long ownerId);
 
     Item findById(long itemId);
 
-    List<Item> search(String request);
+    Set<Item> search(String request);
 
     Item add(Item item);
 

@@ -6,7 +6,9 @@ import org.springframework.stereotype.Repository;
 import ru.practicum.shareit.item.model.Item;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -32,10 +34,20 @@ public class InMemoryItemStorage implements ItemStorage {
     }
 
     @Override
-    public List<Item> search(String request) {
+    public Set<Item> search(String request) {
         log.debug("search method called with request={}", request);
-        // todo search
-        return null;
+
+        List<Item> result = items.values().stream()
+                .filter(item -> item.getDescription().toLowerCase().contains(request.toLowerCase()))
+                .filter(Item::getIsAvailable)
+                .collect(Collectors.toList());
+
+        result.addAll(items.values().stream()
+                .filter(item -> item.getName().toLowerCase().contains(request.toLowerCase()))
+                .filter(Item::getIsAvailable)
+                .collect(Collectors.toList()));
+
+        return new HashSet<>(result);
     }
 
     @Override
