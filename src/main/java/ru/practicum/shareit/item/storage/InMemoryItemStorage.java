@@ -23,7 +23,7 @@ public class InMemoryItemStorage implements ItemStorage {
     public List<Item> findAllByOwnerId(long ownerId) {
         log.debug("findAllByOwnerId method called");
         return items.values().stream()
-                .filter(item -> item.getOwnerId().equals(ownerId))
+                .filter(item -> item.getOwner().getId().equals(ownerId))
                 .collect(Collectors.toList());
     }
 

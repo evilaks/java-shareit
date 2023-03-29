@@ -6,6 +6,8 @@ import ru.practicum.shareit.item.dto.ItemDto;
 import ru.practicum.shareit.item.dto.ItemDtoMapper;
 import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.item.storage.ItemStorage;
+import ru.practicum.shareit.user.dto.UserDto;
+import ru.practicum.shareit.user.dto.UserDtoMapper;
 import ru.practicum.shareit.user.service.UserService;
 import ru.practicum.shareit.util.exception.NotAllowedException;
 import ru.practicum.shareit.util.exception.NotFoundException;
@@ -40,9 +42,9 @@ public class ItemServiceImpl implements ItemService {
 
     @Override
     public ItemDto add(long userId, ItemDto itemDto) {
-        userService.findById(userId); // throws 404 if user not found
+        UserDto owner = userService.findById(userId); // throws 404 if user not found
         if (this.isValidItem(itemDto)) {
-            Item newItem = itemStorage.add(ItemDtoMapper.toItem(itemDto, userId));
+            Item newItem = itemStorage.add(ItemDtoMapper.toItem(itemDto, UserDtoMapper.toUser(owner)));
             itemDto.setId(newItem.getId());
             return itemDto;
         } else throw new ValidationException("Invalid item received");
@@ -54,7 +56,7 @@ public class ItemServiceImpl implements ItemService {
         userService.findById(userId); // throws 404 if user not found
         Item itemToUpdate = itemStorage.findById(itemId);
         if (itemToUpdate == null) throw new NotFoundException("Item not found");
-        if (itemToUpdate.getOwnerId() != userId) throw new NotAllowedException("Item update is not allowed to that user");
+        if (itemToUpdate.getOwner().getId() != userId) throw new NotAllowedException("Item update is not allowed to that user");
 
         if (itemDto.getName() != null) itemToUpdate.setName(itemDto.getName());
         if (itemDto.getDescription() != null) itemToUpdate.setDescription(itemDto.getDescription());
@@ -78,7 +80,7 @@ public class ItemServiceImpl implements ItemService {
         userService.findById(userId); // throws 404 if user not found
         Item itemToDelete = itemStorage.findById(itemId);
         if (itemToDelete == null) throw new NotFoundException("Item not found");
-        if (itemToDelete.getOwnerId() != userId) throw new NotAllowedException("Item delete is not allowed to that user");
+        if (itemToDelete.getOwner().getId() != userId) throw new NotAllowedException("Item delete is not allowed to that user");
 
         itemStorage.delete(itemId);
     }

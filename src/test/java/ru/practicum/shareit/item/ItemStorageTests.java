@@ -5,6 +5,7 @@ import org.junit.jupiter.api.Test;
 import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.item.storage.InMemoryItemStorage;
 import ru.practicum.shareit.item.storage.ItemStorage;
+import ru.practicum.shareit.user.model.User;
 
 import java.util.List;
 
@@ -79,18 +80,30 @@ public class ItemStorageTests {
     }
 
     private void testInit() {
+        User testUser1 = User.builder()
+                .id(1L)
+                .name("username")
+                .email("user@example.com")
+                .build();
+
+        User testUser2 = User.builder()
+                .id(2L)
+                .name("second_username")
+                .email("seconduser@example.com")
+                .build();
+
         testItem1 = Item.builder()
                 .name("itemname")
                 .description("itemdesc")
                 .isAvailable(true)
-                .ownerId(1L)
+                .owner(testUser1)
                 .build();
 
         testItem2 = Item.builder()
                 .name("seconditemname")
                 .description("seconditemdesc")
                 .isAvailable(true)
-                .ownerId(2L)
+                .owner(testUser2)
                 .build();
     }
 }
