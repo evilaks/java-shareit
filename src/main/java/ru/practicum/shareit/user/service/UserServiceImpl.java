@@ -19,18 +19,19 @@ import java.util.stream.Collectors;
 public class UserServiceImpl implements UserService {
 
     private final UserStorage userStorage;
+    private final UserDtoMapper userDtoMapper;
 
     @Override
     public UserDto findById(long userId) {
         if (this.doesExist(userId)) {
-            return UserDtoMapper.toUserDto(userStorage.findById(userId));
+            return userDtoMapper.toUserDto(userStorage.findById(userId));
         } else throw new NotFoundException("User with id=" + userId + " not found");
     }
 
     @Override
     public List<UserDto> findAll() {
         return userStorage.findAll().stream()
-                .map(UserDtoMapper::toUserDto)
+                .map(userDtoMapper::toUserDto)
                 .collect(Collectors.toList());
     }
 
@@ -38,8 +39,8 @@ public class UserServiceImpl implements UserService {
     public UserDto add(UserDto userDto) {
         if (this.isValidUser(userDto)) {
             if (this.haveNoConflicts(userDto)) {
-                User userToAdd = UserDtoMapper.toUser(userDto);
-                return UserDtoMapper.toUserDto(userStorage.add(userToAdd));
+                User userToAdd = userDtoMapper.toUser(userDto);
+                return userDtoMapper.toUserDto(userStorage.add(userToAdd));
             } else throw new ConflictException("User has conflict with existing data");
         } else throw new BadRequestException("Invalid user object received");
     }
@@ -62,7 +63,7 @@ public class UserServiceImpl implements UserService {
                     userToUpdate.setName(userDto.getName());
                 }
 
-                return UserDtoMapper.toUserDto(userStorage.update(userId, userToUpdate));
+                return userDtoMapper.toUserDto(userStorage.update(userId, userToUpdate));
 
         } else throw new NotFoundException("User with id=" + userId + " not found");
     }

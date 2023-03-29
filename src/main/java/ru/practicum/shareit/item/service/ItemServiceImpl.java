@@ -22,13 +22,15 @@ public class ItemServiceImpl implements ItemService {
 
     private final ItemStorage itemStorage;
     private final UserService userService;
+    private final ItemDtoMapper itemDtoMapper;
+    private final UserDtoMapper userDtoMapper;
 
     @Override
     public ItemDto findById(long itemId, long userId) {
         userService.findById(userId); // throws 404 if user not found
         Item item = itemStorage.findById(itemId);
         if (item != null) {
-            return ItemDtoMapper.toItemDto(item);
+            return itemDtoMapper.toItemDto(item);
         } else throw new NotFoundException("Item not found");
     }
 
@@ -36,7 +38,7 @@ public class ItemServiceImpl implements ItemService {
     public List<ItemDto> findAll(long userId) {
         userService.findById(userId); // throws 404 if user not found
         return itemStorage.findAllByOwnerId(userId).stream()
-                .map(ItemDtoMapper::toItemDto)
+                .map(itemDtoMapper::toItemDto)
                 .collect(Collectors.toList());
     }
 
@@ -44,7 +46,7 @@ public class ItemServiceImpl implements ItemService {
     public ItemDto add(long userId, ItemDto itemDto) {
         UserDto owner = userService.findById(userId); // throws 404 if user not found
         if (this.isValidItem(itemDto)) {
-            Item newItem = itemStorage.add(ItemDtoMapper.toItem(itemDto, UserDtoMapper.toUser(owner)));
+            Item newItem = itemStorage.add(itemDtoMapper.toItem(itemDto, userDtoMapper.toUser(owner)));
             itemDto.setId(newItem.getId());
             return itemDto;
         } else throw new ValidationException("Invalid item received");
@@ -62,7 +64,7 @@ public class ItemServiceImpl implements ItemService {
         if (itemDto.getDescription() != null) itemToUpdate.setDescription(itemDto.getDescription());
         if (itemDto.getAvailable() != null) itemToUpdate.setIsAvailable(itemDto.getAvailable());
 
-        return ItemDtoMapper.toItemDto(itemStorage.update(itemId, itemToUpdate));
+        return itemDtoMapper.toItemDto(itemStorage.update(itemId, itemToUpdate));
     }
 
     @Override
@@ -70,7 +72,7 @@ public class ItemServiceImpl implements ItemService {
         userService.findById(userId); // throws 404 if user not found
         if (request.isBlank()) return new ArrayList<>();
         return itemStorage.search(request).stream()
-                .map(ItemDtoMapper::toItemDto)
+                .map(itemDtoMapper::toItemDto)
                 .sorted(Comparator.comparing(ItemDto::getId))
                 .collect(Collectors.toList());
     }

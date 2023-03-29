@@ -4,6 +4,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import ru.practicum.shareit.user.dto.UserDto;
+import ru.practicum.shareit.user.dto.UserDtoMapper;
 import ru.practicum.shareit.user.model.User;
 import ru.practicum.shareit.user.service.UserService;
 import ru.practicum.shareit.user.service.UserServiceImpl;
@@ -18,6 +19,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 public class UserServiceTests {
 
     private final UserStorage userStorage = Mockito.mock(UserStorage.class);
+    private final UserDtoMapper userDtoMapper = Mockito.mock(UserDtoMapper.class);
     private UserService userService;
     private User testUser1;
     private User testUser2;
@@ -26,7 +28,7 @@ public class UserServiceTests {
 
     @BeforeEach
     public void beforeEach() {
-        userService = new UserServiceImpl(userStorage);
+        userService = new UserServiceImpl(userStorage, userDtoMapper);
         testInit();
     }
 
@@ -34,6 +36,7 @@ public class UserServiceTests {
     public void findByIdTest() {
 
         Mockito.when(userStorage.findById(1L)).thenReturn(testUser1);
+        Mockito.when(userDtoMapper.toUserDto(testUser1)).thenReturn(testUserDto1);
 
         UserDto actual = userService.findById(1L);
 
@@ -52,6 +55,8 @@ public class UserServiceTests {
     @Test
     public void addTest() {
         Mockito.when(userStorage.add(testUser1)).thenReturn(testUser1);
+        Mockito.when(userDtoMapper.toUser(testUserDto1)).thenReturn(testUser1);
+        Mockito.when(userDtoMapper.toUserDto(testUser1)).thenReturn(testUserDto1);
 
         UserDto actual = userService.add(testUserDto1);
 
@@ -63,9 +68,14 @@ public class UserServiceTests {
         testUser1.setId(1L);
         Mockito.when(userStorage.findById(1L)).thenReturn(testUser1);
         Mockito.when(userStorage.update(1L, testUser1)).thenReturn(testUser1);
+        Mockito.when(userDtoMapper.toUser(testUserDto1)).thenReturn(testUser1);
+        Mockito.when(userDtoMapper.toUserDto(testUser1)).thenReturn(UserDto.builder()
+                        .name("updatedName")
+                        .email("updatedemail@example.com")
+                        .build());
 
-        testUser1.setName("updatedName");
-        testUser1.setEmail("updatedemail@example.com");
+        testUserDto1.setName("updatedName");
+        testUserDto1.setEmail("updatedemail@example.com");
         UserDto actual = userService.update(1L, testUserDto1);
 
         assertThat(actual).hasFieldOrPropertyWithValue("name", testUser1.getName())
