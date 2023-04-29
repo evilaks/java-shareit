@@ -2,10 +2,11 @@ package ru.practicum.shareit.user.service;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.shareit.user.dto.UserDto;
 import ru.practicum.shareit.user.dto.UserDtoMapper;
 import ru.practicum.shareit.user.model.User;
-import ru.practicum.shareit.user.storage.UserStorage;
+import ru.practicum.shareit.user.storage.UserRepository;
 import ru.practicum.shareit.util.exception.BadRequestException;
 import ru.practicum.shareit.util.exception.ConflictException;
 import ru.practicum.shareit.util.exception.NotFoundException;
@@ -15,39 +16,42 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 @Service
+@Transactional(readOnly = true)
 @RequiredArgsConstructor
 public class UserServiceImpl implements UserService {
 
-    private final UserStorage userStorage;
+    private final UserRepository userRepository;
     private final UserDtoMapper userDtoMapper;
 
     @Override
     public UserDto findById(long userId) {
         if (this.doesExist(userId)) {
-            return userDtoMapper.toUserDto(userStorage.findById(userId));
+            return userDtoMapper.toUserDto(userRepository.findById(userId).orElse(null));
         } else throw new NotFoundException("User with id=" + userId + " not found");
     }
 
     @Override
     public List<UserDto> findAll() {
-        return userStorage.findAll().stream()
+        return userRepository.findAll().stream()
                 .map(userDtoMapper::toUserDto)
                 .collect(Collectors.toList());
     }
 
+    @Transactional
     @Override
     public UserDto add(UserDto userDto) {
         if (this.isValidUser(userDto)) {
             if (this.haveNoConflicts(userDto)) {
                 User userToAdd = userDtoMapper.toUser(userDto);
-                return userDtoMapper.toUserDto(userStorage.add(userToAdd));
+                return userDtoMapper.toUserDto(userRepository.save(userToAdd));
             } else throw new ConflictException("User has conflict with existing data");
         } else throw new BadRequestException("Invalid user object received");
     }
 
+    @Transactional
     @Override
     public UserDto update(Long userId, UserDto userDto) {
-        User userToUpdate = userStorage.findById(userId);
+        User userToUpdate = userRepository.findById(userId).orElse(null);
 
         if (userToUpdate != null) {
 
@@ -63,15 +67,16 @@ public class UserServiceImpl implements UserService {
                     userToUpdate.setName(userDto.getName());
                 }
 
-                return userDtoMapper.toUserDto(userStorage.update(userId, userToUpdate));
+                return userDtoMapper.toUserDto(userRepository.save(userToUpdate));
 
         } else throw new NotFoundException("User with id=" + userId + " not found");
     }
 
+    @Transactional
     @Override
     public void delete(long userId) {
         if (this.doesExist(userId)) {
-            userStorage.delete(userId);
+            userRepository.deleteById(userId);
         } else throw new NotFoundException("User with id=" + userId + " not found");
     }
 
@@ -93,14 +98,14 @@ public class UserServiceImpl implements UserService {
     private boolean haveNoConflicts(UserDto userDto) {
 
         // check if email is already exist
-        return userStorage.findAll()
+        return userRepository.findAll()
                 .stream()
                 .map(User::getEmail)
                 .noneMatch(email -> email.equals(userDto.getEmail()));
     }
 
     private boolean doesExist(Long userId) {
-        return userStorage.findById(userId) != null;
+        return userRepository.findById(userId).orElse(null) != null;
     }
 
     public boolean isValidEmail(String email) {
