@@ -41,10 +41,10 @@ public class UserServiceImpl implements UserService {
     @Override
     public UserDto add(UserDto userDto) {
         if (this.isValidUser(userDto)) {
-            if (this.haveNoConflicts(userDto)) {
-                User userToAdd = userDtoMapper.toUser(userDto);
-                return userDtoMapper.toUserDto(userRepository.save(userToAdd));
-            } else throw new ConflictException("User has conflict with existing data");
+
+            User userToAdd = userDtoMapper.toUser(userDto);
+            return userDtoMapper.toUserDto(userRepository.save(userToAdd));
+
         } else throw new BadRequestException("Invalid user object received");
     }
 
@@ -56,7 +56,7 @@ public class UserServiceImpl implements UserService {
         if (userToUpdate != null) {
 
                 if (userDto.getEmail() != null) {
-                    if (this.haveNoConflicts(userDto) || userToUpdate.getEmail().equals(userDto.getEmail())) {
+                    if (userToUpdate.getEmail().equals(userDto.getEmail())) {
                         if (this.isValidEmail(userDto.getEmail())) {
                             userToUpdate.setEmail(userDto.getEmail());
                         } else throw new BadRequestException("Invalid email");
@@ -93,15 +93,6 @@ public class UserServiceImpl implements UserService {
         }
 
         return true;
-    }
-
-    private boolean haveNoConflicts(UserDto userDto) {
-
-        // check if email is already exist
-        return userRepository.findAll()
-                .stream()
-                .map(User::getEmail)
-                .noneMatch(email -> email.equals(userDto.getEmail()));
     }
 
     private boolean doesExist(Long userId) {
