@@ -4,27 +4,23 @@ import lombok.Data;
 import ru.practicum.shareit.user.model.User;
 
 import javax.persistence.*;
+import java.time.LocalDateTime;
 
-
-@Entity
-@Table(name = "items")
 @Data
-public class Item {
+@Entity
+@Table(name = "comments")
+public class Comment {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private String name;
-
-    private String description;
-
-    @Column(name = "is_available")
-    private Boolean isAvailable;
+    private String text;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    private User owner;
+    private User author;
 
-    public Item() {
+    @ManyToOne(fetch = FetchType.LAZY)
+    private Item item;
 
-    }
+    private LocalDateTime created;
 }

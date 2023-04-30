@@ -6,15 +6,16 @@ import ru.practicum.shareit.booking.dto.BookingDtoMapper;
 import ru.practicum.shareit.booking.dto.ItemBookingDto;
 import ru.practicum.shareit.booking.model.BookingStatus;
 import ru.practicum.shareit.booking.storage.BookingRepository;
-import ru.practicum.shareit.item.dto.ItemDto;
-import ru.practicum.shareit.item.dto.ItemDtoMapper;
-import ru.practicum.shareit.item.dto.ItemWithBookingsDto;
+import ru.practicum.shareit.item.dto.*;
+import ru.practicum.shareit.item.model.Comment;
 import ru.practicum.shareit.item.model.Item;
+import ru.practicum.shareit.item.storage.CommentRepository;
 import ru.practicum.shareit.item.storage.ItemRepository;
 import ru.practicum.shareit.item.storage.ItemStorage;
 import ru.practicum.shareit.user.dto.UserDto;
 import ru.practicum.shareit.user.dto.UserDtoMapper;
 import ru.practicum.shareit.user.service.UserService;
+import ru.practicum.shareit.util.exception.BadRequestException;
 import ru.practicum.shareit.util.exception.NotAllowedException;
 import ru.practicum.shareit.util.exception.NotFoundException;
 import ru.practicum.shareit.util.exception.ValidationException;
@@ -37,6 +38,8 @@ public class ItemServiceImpl implements ItemService {
     private final UserDtoMapper userDtoMapper;
     private final BookingDtoMapper bookingDtoMapper;
     private final BookingRepository bookingRepository;
+    private final CommentRepository commentRepository;
+    private final CommentDtoMapper commentDtoMapper;
 
     @Override
     public ItemWithBookingsDto findById(long itemId, long userId) {
@@ -46,30 +49,27 @@ public class ItemServiceImpl implements ItemService {
 
         Item item = itemRepository.findById(itemId).orElse(null);
 
-        ItemBookingDto lastBooking = bookingDtoMapper.toItemBookingDto(
-                bookingRepository.findFirstByItemIdAndStartTimeBeforeAndStatusOrderByStartTimeDesc(itemId,
-                                LocalDateTime.now(),
-                                BookingStatus.APPROVED)
-                        .orElse(null));
-
-
-        ItemBookingDto nextBooking = bookingDtoMapper.toItemBookingDto(
-                bookingRepository.findFirstByItemIdAndStartTimeAfterAndStatusOrderByStartTimeAsc(itemId,
-                                LocalDateTime.now(),
-                                BookingStatus.APPROVED)
-                        .orElse(null));
-
         if (item != null) {
-            return itemDtoMapper.toItemWithBookingsDto(item, lastBooking, nextBooking);
+            if (item.getOwner().getId().equals(userId)) {
+                return this.addBookingsAndCommentsToItem(item);
+            } else {
+                List<CommentDto> comments = commentRepository.findAllByItemIdOrderByCreatedDesc(item.getId()).stream()
+                        .map(commentDtoMapper::toDto)
+                        .collect(Collectors.toList());
+                return itemDtoMapper.toItemWithBookingsDto(item, null, null, comments);
+            }
         } else throw new NotFoundException("Item not found");
     }
 
     @Override
-    public List<ItemDto> findAll(long userId) {
+    public List<ItemWithBookingsDto> findAll(long userId) {
+
         userService.findById(userId); // throws 404 if user not found
 
-        return itemRepository.findAllByOwnerId(userId).stream()
-                .map(itemDtoMapper::toItemDto)
+
+
+        return itemRepository.findAllByOwnerIdOrderById(userId).stream()
+                .map(this::addBookingsAndCommentsToItem)
                 .collect(Collectors.toList());
     }
 
@@ -113,6 +113,32 @@ public class ItemServiceImpl implements ItemService {
 
     @Transactional
     @Override
+    public CommentDto addComment(long userId, long itemId, Comment comment) {
+        // throws 404 if user not found
+        UserDto userDto = userService.findById(userId);
+
+        if (comment.getText() == null || comment.getText().isBlank()) throw new BadRequestException("Comment text is empty");
+
+        Item item = itemRepository.findById(itemId).orElse(null);
+
+        // check if item has previous bookings from this user and save comment
+        if (item != null) {
+            if (bookingRepository.existsByItemIdAndBookerIdAndStatusAndEndTimeBefore(itemId,
+                    userId,
+                    BookingStatus.APPROVED,
+                    LocalDateTime.now())) {
+                comment.setItem(item);
+                comment.setAuthor(userDtoMapper.toUser(userDto));
+                comment.setCreated(LocalDateTime.now());
+                Comment newComment = commentRepository.save(comment);
+                return commentDtoMapper.toDto(newComment);
+            } else throw new BadRequestException("User has no previous bookings for this item");
+        } else throw new NotFoundException("Item not found");
+
+    }
+
+    @Transactional
+    @Override
     public void delete(long userId, long itemId) {
         userService.findById(userId); // throws 404 if user not found
         Item itemToDelete = itemRepository.findById(itemId).orElse(null);
@@ -136,6 +162,27 @@ public class ItemServiceImpl implements ItemService {
         }
 
         return true;
+    }
+
+    private ItemWithBookingsDto addBookingsAndCommentsToItem(Item item) {
+
+        List<CommentDto> comments = commentRepository.findAllByItemIdOrderByCreatedDesc(item.getId()).stream()
+                .map(commentDtoMapper::toDto)
+                .collect(Collectors.toList());
+
+        ItemBookingDto lastBooking = bookingDtoMapper.toItemBookingDto(
+                    bookingRepository.findFirstByItemIdAndStartTimeBeforeAndStatusOrderByStartTimeDesc(item.getId(),
+                            LocalDateTime.now(),
+                            BookingStatus.APPROVED)
+                            .orElse(null));
+
+        ItemBookingDto nextBooking = bookingDtoMapper.toItemBookingDto(
+                    bookingRepository.findFirstByItemIdAndStartTimeAfterAndStatusOrderByStartTimeAsc(item.getId(),
+                            LocalDateTime.now(),
+                            BookingStatus.APPROVED)
+                            .orElse(null));
+
+        return itemDtoMapper.toItemWithBookingsDto(item, lastBooking, nextBooking, comments);
     }
 
 }

@@ -56,7 +56,7 @@ public class BookingServiceImpl implements BookingService {
 
             // check if booker is not owner of item
             if (item.getOwner().getId().equals(userId)) {
-                throw new ValidationException("Booker is owner of item");
+                throw new NotFoundException("Booker is owner of item");
             }
 
             // make booking
@@ -97,7 +97,7 @@ public class BookingServiceImpl implements BookingService {
             }
             Booking savedBooking = bookingRepository.save(booking);
             return bookingDtoMapper.toDto(savedBooking);
-        } else throw new ValidationException("User is not owner of item");
+        } else throw new NotFoundException("User is not owner of item");
     }
 
     @Override

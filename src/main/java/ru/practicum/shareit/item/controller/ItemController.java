@@ -4,8 +4,10 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import ru.practicum.shareit.item.dto.CommentDto;
 import ru.practicum.shareit.item.dto.ItemDto;
 import ru.practicum.shareit.item.dto.ItemWithBookingsDto;
+import ru.practicum.shareit.item.model.Comment;
 import ru.practicum.shareit.item.service.ItemService;
 
 import java.util.List;
@@ -33,7 +35,7 @@ public class ItemController {
     }
 
     @GetMapping
-    public ResponseEntity<List<ItemDto>> findAllItems(@RequestHeader(value = "X-Sharer-User-Id") Long userId) {
+    public ResponseEntity<List<ItemWithBookingsDto>> findAllItems(@RequestHeader(value = "X-Sharer-User-Id") Long userId) {
         log.debug("Received GET request to /items endpoint with userId={}", userId);
         return ResponseEntity.ok().body(itemService.findAll(userId));
     }
@@ -58,6 +60,15 @@ public class ItemController {
                                @PathVariable Long itemId) {
         log.debug("Received DELETE request to /items/{} endpoint with userId={}", itemId, userId);
         itemService.delete(userId, itemId);
+    }
+
+    // POST /items/{itemId}/comment
+    @PostMapping("/{itemId}/comment")
+    public ResponseEntity<CommentDto> addComment(@RequestHeader(value = "X-Sharer-User-Id") Long userId,
+                                                 @PathVariable Long itemId,
+                                                 @RequestBody Comment comment) {
+        log.debug("Received POST request to /items/{}/comment endpoint with userId={} and comment={}", itemId, userId, comment);
+        return ResponseEntity.ok().body(itemService.addComment(userId, itemId, comment));
     }
 
 }
