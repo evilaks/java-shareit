@@ -9,7 +9,7 @@ import ru.practicum.shareit.booking.dto.BookingDtoMapper;
 import ru.practicum.shareit.booking.model.Booking;
 import ru.practicum.shareit.booking.model.BookingStatus;
 import ru.practicum.shareit.booking.storage.BookingRepository;
-import ru.practicum.shareit.item.dto.ItemDto;
+import ru.practicum.shareit.item.dto.ItemWithBookingsDto;
 import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.item.service.ItemService;
 import ru.practicum.shareit.item.storage.ItemRepository;
@@ -41,7 +41,7 @@ public class BookingServiceImpl implements BookingService {
     public OutgoingBookingDto createBooking(Long userId, IncomingBookingDto incomingBookingDto) {
 
         // throw 404 if item or user not found
-        ItemDto itemDto = itemService.findById(incomingBookingDto.getItemId(), userId);
+        ItemWithBookingsDto itemDto = itemService.findById(incomingBookingDto.getItemId(), userId);
 
 
         if (isValidBooking(incomingBookingDto)) {
@@ -110,10 +110,10 @@ public class BookingServiceImpl implements BookingService {
             throw new NotFoundException("Booking not found");
         }
 
-        // throw 400 if user is neither owner of item nor booker
+        // throw 404 if user is neither owner of item nor booker
         if (!booking.getItem().getOwner().getId().equals(userId)
                 && !booking.getBooker().getId().equals(userId)) {
-            throw new ValidationException("User is neither owner of item nor booker");
+            throw new NotFoundException("Booking not found");
         }
 
         // return booking
@@ -231,6 +231,6 @@ public class BookingServiceImpl implements BookingService {
                 // starts before ends
                 && incomingBookingDto.getStart().isBefore(incomingBookingDto.getEnd())
                 // starts after now
-                && incomingBookingDto.getStart().isAfter(java.time.LocalDateTime.now());
+                && incomingBookingDto.getStart().isAfter(LocalDateTime.now());
     }
 }

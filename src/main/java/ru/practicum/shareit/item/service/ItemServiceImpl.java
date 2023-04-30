@@ -2,8 +2,13 @@ package ru.practicum.shareit.item.service;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import ru.practicum.shareit.booking.dto.BookingDtoMapper;
+import ru.practicum.shareit.booking.dto.ItemBookingDto;
+import ru.practicum.shareit.booking.model.BookingStatus;
+import ru.practicum.shareit.booking.storage.BookingRepository;
 import ru.practicum.shareit.item.dto.ItemDto;
 import ru.practicum.shareit.item.dto.ItemDtoMapper;
+import ru.practicum.shareit.item.dto.ItemWithBookingsDto;
 import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.item.storage.ItemRepository;
 import ru.practicum.shareit.item.storage.ItemStorage;
@@ -16,6 +21,7 @@ import ru.practicum.shareit.util.exception.ValidationException;
 import org.springframework.transaction.annotation.Transactional;
 
 
+import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -29,13 +35,32 @@ public class ItemServiceImpl implements ItemService {
     private final UserService userService;
     private final ItemDtoMapper itemDtoMapper;
     private final UserDtoMapper userDtoMapper;
+    private final BookingDtoMapper bookingDtoMapper;
+    private final BookingRepository bookingRepository;
 
     @Override
-    public ItemDto findById(long itemId, long userId) {
-        userService.findById(userId); // throws 404 if user not found
+    public ItemWithBookingsDto findById(long itemId, long userId) {
+
+        // throws 404 if user not found
+        userService.findById(userId);
+
         Item item = itemRepository.findById(itemId).orElse(null);
+
+        ItemBookingDto lastBooking = bookingDtoMapper.toItemBookingDto(
+                bookingRepository.findFirstByItemIdAndStartTimeBeforeAndStatusOrderByStartTimeDesc(itemId,
+                                LocalDateTime.now(),
+                                BookingStatus.APPROVED)
+                        .orElse(null));
+
+
+        ItemBookingDto nextBooking = bookingDtoMapper.toItemBookingDto(
+                bookingRepository.findFirstByItemIdAndStartTimeAfterAndStatusOrderByStartTimeAsc(itemId,
+                                LocalDateTime.now(),
+                                BookingStatus.APPROVED)
+                        .orElse(null));
+
         if (item != null) {
-            return itemDtoMapper.toItemDto(item);
+            return itemDtoMapper.toItemWithBookingsDto(item, lastBooking, nextBooking);
         } else throw new NotFoundException("Item not found");
     }
 
@@ -51,8 +76,9 @@ public class ItemServiceImpl implements ItemService {
     @Transactional
     @Override
     public ItemDto add(long userId, ItemDto itemDto) {
-        UserDto owner = userService.findById(userId); // throws 404 if user not found
+
         if (this.isValidItem(itemDto)) {
+            UserDto owner = userService.findById(userId); // throws 404 if user not found
             Item newItem = itemRepository.save(itemDtoMapper.toItem(itemDto, userDtoMapper.toUser(owner)));
             itemDto.setId(newItem.getId());
             return itemDto;

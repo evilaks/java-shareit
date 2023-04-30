@@ -19,4 +19,7 @@ public interface BookingDtoMapper {
     @Mapping(target = "endTime", source = "bookingDto.end")
     Booking toBooking(IncomingBookingDto bookingDto, Item item, User booker);
 
+    @Mapping(target = "bookerId", source = "booker.id")
+    ItemBookingDto toItemBookingDto(Booking booking);
+
 }

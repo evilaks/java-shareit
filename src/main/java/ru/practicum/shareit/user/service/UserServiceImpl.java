@@ -8,7 +8,6 @@ import ru.practicum.shareit.user.dto.UserDtoMapper;
 import ru.practicum.shareit.user.model.User;
 import ru.practicum.shareit.user.storage.UserRepository;
 import ru.practicum.shareit.util.exception.BadRequestException;
-import ru.practicum.shareit.util.exception.ConflictException;
 import ru.practicum.shareit.util.exception.NotFoundException;
 
 import java.util.List;
@@ -41,10 +40,8 @@ public class UserServiceImpl implements UserService {
     @Override
     public UserDto add(UserDto userDto) {
         if (this.isValidUser(userDto)) {
-
             User userToAdd = userDtoMapper.toUser(userDto);
             return userDtoMapper.toUserDto(userRepository.save(userToAdd));
-
         } else throw new BadRequestException("Invalid user object received");
     }
 
@@ -56,11 +53,9 @@ public class UserServiceImpl implements UserService {
         if (userToUpdate != null) {
 
                 if (userDto.getEmail() != null) {
-                    if (userToUpdate.getEmail().equals(userDto.getEmail())) {
-                        if (this.isValidEmail(userDto.getEmail())) {
-                            userToUpdate.setEmail(userDto.getEmail());
-                        } else throw new BadRequestException("Invalid email");
-                    } else throw new ConflictException("Email conflict found");
+                    if (this.isValidEmail(userDto.getEmail())) {
+                        userToUpdate.setEmail(userDto.getEmail());
+                    } else throw new BadRequestException("Invalid email");
                 }
 
                 if (userDto.getName() != null) {

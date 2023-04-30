@@ -5,6 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.shareit.item.dto.ItemDto;
+import ru.practicum.shareit.item.dto.ItemWithBookingsDto;
 import ru.practicum.shareit.item.service.ItemService;
 
 import java.util.List;
@@ -38,8 +39,8 @@ public class ItemController {
     }
 
     @GetMapping("/{itemId}")
-    public ResponseEntity<ItemDto> findItemById(@RequestHeader(value = "X-Sharer-User-Id") Long userId,
-                                @PathVariable Long itemId) {
+    public ResponseEntity<ItemWithBookingsDto> findItemById(@RequestHeader(value = "X-Sharer-User-Id") Long userId,
+                                                            @PathVariable Long itemId) {
         log.debug("Received GET request to /items/{} endpoint with userId={}", itemId, userId);
         return ResponseEntity.ok().body(itemService.findById(itemId, userId));
     }
