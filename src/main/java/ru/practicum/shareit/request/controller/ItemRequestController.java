@@ -45,29 +45,31 @@ public class ItemRequestController {
     @PostMapping
     public ResponseEntity<ItemRequestDto> createItemRequest(@RequestHeader(value = "X-Sharer-User-Id") Long userId,
                                                             @RequestBody ItemRequestDto itemRequestDto) {
-        log.debug("createItemRequest: userId={}, itemRequestDto={}", userId, itemRequestDto);
-        return ResponseEntity.ok().body(itemRequestService.create(itemRequestDto));
+        log.debug("Received POST-request at /requests endpoint with userId={}, itemRequestDto={}", userId, itemRequestDto);
+        return ResponseEntity.ok().body(itemRequestService.createItemRequest(userId, itemRequestDto));
     }
 
     // GET /requests
     @GetMapping
     public ResponseEntity<List<ItemRequestDto>> getUserItemRequests(@RequestHeader(value = "X-Sharer-User-Id") Long userId) {
-        log.debug("getUserItemRequests: userId={}", userId);
+        log.debug("Received GET-request at /requests endpoint with userId={}", userId);
         return ResponseEntity.ok().body(itemRequestService.getUserItemRequests(userId));
     }
 
     // GET /requests/all?from={from}&size={size}
     @GetMapping("/all")
-    public ResponseEntity<List<ItemRequestDto>> getOtherUsersItemRequests(@RequestParam Integer from,
-                                                                          @RequestParam Integer size) {
-        log.debug("getOtherUsersItemRequests: from={}, size={}", from, size);
-        return ResponseEntity.ok().body(itemRequestService.getOtherUsersItemRequests());
+    public ResponseEntity<List<ItemRequestDto>> getOtherUsersItemRequests(@RequestHeader(value = "X-Sharer-User-Id") Long userId,
+                                                                          @RequestParam(defaultValue = "0") Integer from,
+                                                                          @RequestParam(defaultValue = "100") Integer size) {
+        log.debug("Received GET-request at /requests/all endpoint with from={}, size={}", from, size);
+        return ResponseEntity.ok().body(itemRequestService.getOtherUsersItemRequests(userId, from, size));
     }
 
     // GET /requests/{requestId}
     @GetMapping("/{requestId}")
-    public ResponseEntity<ItemRequestDto> getItemRequestById(@PathVariable Long requestId) {
-        log.debug("getItemRequestById: requestId={}", requestId);
-        return ResponseEntity.ok().body(itemRequestService.getItemRequestById(requestId));
+    public ResponseEntity<ItemRequestDto> getItemRequestById(@RequestHeader(value = "X-Sharer-User-Id") Long userId,
+                                                             @PathVariable Long requestId) {
+        log.debug("Received GET-request at /requests/ endpoint with requestId={}", requestId);
+        return ResponseEntity.ok().body(itemRequestService.getItemRequestById(userId, requestId));
     }
 }

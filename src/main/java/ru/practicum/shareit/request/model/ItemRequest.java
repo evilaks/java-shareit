@@ -1,7 +1,7 @@
 package ru.practicum.shareit.request.model;
 
-
 import lombok.Data;
+import ru.practicum.shareit.user.model.User;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;
@@ -18,5 +18,8 @@ public class ItemRequest {
     private String description;
 
     private LocalDateTime created;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    private User author;
 
 }
