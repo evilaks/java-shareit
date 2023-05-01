@@ -1,6 +1,7 @@
 package ru.practicum.shareit.item.service;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import ru.practicum.shareit.booking.dto.BookingDtoMapper;
 import ru.practicum.shareit.booking.dto.ItemBookingDto;
@@ -65,13 +66,19 @@ public class ItemServiceImpl implements ItemService {
     }
 
     @Override
-    public List<ItemWithBookingsDto> findAll(long userId) {
+    public List<ItemWithBookingsDto> findAll(long userId, Integer from, Integer size) {
 
         userService.findById(userId); // throws 404 if user not found
 
+        // validate from and size
+        if (from < 0 || size < 1) {
+            throw new ValidationException("Invalid from or size");
+        }
 
+        // convert from to page
+        int page = from > 0 ? from / size : 0;
 
-        return itemRepository.findAllByOwnerIdOrderById(userId).stream()
+        return itemRepository.findAllByOwnerIdOrderById(userId, PageRequest.of(page, size)).stream()
                 .map(this::addBookingsAndCommentsToItem)
                 .collect(Collectors.toList());
     }
@@ -111,10 +118,21 @@ public class ItemServiceImpl implements ItemService {
     }
 
     @Override
-    public List<ItemDto> search(long userId, String request) {
+    public List<ItemDto> search(long userId, String request, Integer from, Integer size) {
         userService.findById(userId); // throws 404 if user not found
+
+        // validate from and size
+        if (from < 0 || size < 1) {
+            throw new ValidationException("Invalid from or size");
+        }
+
+        // convert from to page
+        int page = from > 0 ? from / size : 0;
+
         if (request.isBlank()) return new ArrayList<>();
-        return itemRepository.findByNameContainingIgnoreCaseOrDescriptionContainingIgnoreCaseAndIsAvailable(request, request, true).stream()
+
+        return itemRepository.findByNameContainingIgnoreCaseOrDescriptionContainingIgnoreCaseAndIsAvailable(request,
+                        request, true, PageRequest.of(page, size)).stream()
                 .map(itemDtoMapper::toItemDto)
                 .sorted(Comparator.comparing(ItemDto::getId))
                 .collect(Collectors.toList());

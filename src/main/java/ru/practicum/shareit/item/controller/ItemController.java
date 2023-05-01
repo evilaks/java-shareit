@@ -29,16 +29,18 @@ public class ItemController {
 
     @PatchMapping("/{itemId}")
     public ResponseEntity<ItemDto> updateItem(@RequestHeader(value = "X-Sharer-User-Id") Long ownerId,
-                              @RequestBody ItemDto itemDto,
-                              @PathVariable Long itemId) {
+                                              @RequestBody ItemDto itemDto,
+                                              @PathVariable Long itemId) {
         log.debug("Received PATCH request to /items/{} endpoint with userId={} and {}", itemId, ownerId, itemDto);
         return ResponseEntity.ok().body(itemService.update(ownerId, itemId, itemDto));
     }
 
     @GetMapping
-    public ResponseEntity<List<ItemWithBookingsDto>> findAllItems(@RequestHeader(value = "X-Sharer-User-Id") Long userId) {
+    public ResponseEntity<List<ItemWithBookingsDto>> findAllItems(@RequestHeader(value = "X-Sharer-User-Id") Long userId,
+                                                                  @RequestParam(defaultValue = "0") Integer from,
+                                                                  @RequestParam(defaultValue = "100") Integer size) {
         log.debug("Received GET request to /items endpoint with userId={}", userId);
-        return ResponseEntity.ok().body(itemService.findAll(userId));
+        return ResponseEntity.ok().body(itemService.findAll(userId, from, size));
     }
 
     @GetMapping("/{itemId}")
@@ -50,10 +52,12 @@ public class ItemController {
 
     @GetMapping("/search")
     public ResponseEntity<List<ItemDto>> searchItems(@RequestHeader(value = "X-Sharer-User-Id") Long userId,
-                                    @RequestParam String text) {
+                                                     @RequestParam String text,
+                                                     @RequestParam(defaultValue = "0") Integer from,
+                                                     @RequestParam(defaultValue = "100") Integer size) {
         log.debug("Received GET request to /search endpoint with userId={} and text-param={}", userId, text);
 
-        return ResponseEntity.ok().body(itemService.search(userId, text));
+        return ResponseEntity.ok().body(itemService.search(userId, text, from, size));
     }
 
     @DeleteMapping("/{itemId}")
