@@ -12,6 +12,7 @@ import ru.practicum.shareit.request.storage.ItemRequestRepository;
 import ru.practicum.shareit.user.dto.UserDto;
 import ru.practicum.shareit.user.dto.UserDtoMapper;
 import ru.practicum.shareit.user.service.UserService;
+import ru.practicum.shareit.util.exception.NotFoundException;
 import ru.practicum.shareit.util.exception.ValidationException;
 
 import java.time.LocalDateTime;
@@ -70,7 +71,12 @@ public class ItemRequestServiceImpl implements ItemRequestService {
 
     @Override
     public ItemRequestDto getItemRequestById(Long userId, Long id) {
-        return null;
+        // throws 404 if user not found
+        userService.findById(userId);
+
+        return itemRequestRepository.findById(id)
+                .map(i -> itemRequestDtoMapper.toItemRequestDto(i, i.getItems()))
+                .orElseThrow(() -> new NotFoundException("Item request not found"));
     }
 
     private Boolean isValidItemRequest(ItemRequestDto itemRequestDto) {
