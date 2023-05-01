@@ -44,7 +44,7 @@ public class ItemRequestServiceImpl implements ItemRequestService {
 
         itemRequest = itemRequestRepository.save(itemRequest);
 
-        return itemRequestDtoMapper.toItemRequestDto(itemRequest);
+        return itemRequestDtoMapper.toItemRequestDto(itemRequest, itemRequest.getItems());
     }
 
     @Override
@@ -53,7 +53,7 @@ public class ItemRequestServiceImpl implements ItemRequestService {
         userService.findById(userId);
 
         return itemRequestRepository.findAllByAuthorId(userId).stream()
-                .map(itemRequestDtoMapper::toItemRequestDto)
+                .map(i -> itemRequestDtoMapper.toItemRequestDto(i, i.getItems()))
                 .collect(Collectors.toList());
     }
 
@@ -64,7 +64,7 @@ public class ItemRequestServiceImpl implements ItemRequestService {
 
         return itemRequestRepository.findAllByAuthorIdNot(userId, PageRequest.of(from, size, Sort.by("created")))
                 .stream()
-                .map(itemRequestDtoMapper::toItemRequestDto)
+                .map(i -> itemRequestDtoMapper.toItemRequestDto(i, i.getItems()))
                 .collect(Collectors.toList());
     }
 

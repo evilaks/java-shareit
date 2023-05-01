@@ -12,6 +12,8 @@ import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.item.storage.CommentRepository;
 import ru.practicum.shareit.item.storage.ItemRepository;
 import ru.practicum.shareit.item.storage.ItemStorage;
+import ru.practicum.shareit.request.model.ItemRequest;
+import ru.practicum.shareit.request.storage.ItemRequestRepository;
 import ru.practicum.shareit.user.dto.UserDto;
 import ru.practicum.shareit.user.dto.UserDtoMapper;
 import ru.practicum.shareit.user.service.UserService;
@@ -40,6 +42,7 @@ public class ItemServiceImpl implements ItemService {
     private final BookingRepository bookingRepository;
     private final CommentRepository commentRepository;
     private final CommentDtoMapper commentDtoMapper;
+    private final ItemRequestRepository itemRequestRepository;
 
     @Override
     public ItemWithBookingsDto findById(long itemId, long userId) {
@@ -79,7 +82,13 @@ public class ItemServiceImpl implements ItemService {
 
         if (this.isValidItem(itemDto)) {
             UserDto owner = userService.findById(userId); // throws 404 if user not found
-            Item newItem = itemRepository.save(itemDtoMapper.toItem(itemDto, userDtoMapper.toUser(owner)));
+
+            ItemRequest itemRequest = null;
+            if (itemDto.getRequestId() != null) {
+                itemRequest = itemRequestRepository.findById(itemDto.getRequestId()).orElse(null);
+            }
+
+            Item newItem = itemRepository.save(itemDtoMapper.toItem(itemDto, userDtoMapper.toUser(owner), itemRequest));
             itemDto.setId(newItem.getId());
             return itemDto;
         } else throw new ValidationException("Invalid item received");

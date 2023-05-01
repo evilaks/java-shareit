@@ -1,6 +1,7 @@
 package ru.practicum.shareit.item.model;
 
 import lombok.Data;
+import ru.practicum.shareit.request.model.ItemRequest;
 import ru.practicum.shareit.user.model.User;
 
 import javax.persistence.*;
@@ -23,6 +24,10 @@ public class Item {
 
     @ManyToOne(fetch = FetchType.LAZY)
     private User owner;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "request_id", referencedColumnName = "id")
+    private ItemRequest itemRequest;
 
     public Item() {
 

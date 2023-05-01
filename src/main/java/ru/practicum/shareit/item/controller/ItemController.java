@@ -21,7 +21,8 @@ public class ItemController {
     private final ItemService itemService;
 
     @PostMapping()
-    public ResponseEntity<ItemDto> addItem(@RequestHeader(value = "X-Sharer-User-Id") Long ownerId, @RequestBody ItemDto itemDto) {
+    public ResponseEntity<ItemDto> addItem(@RequestHeader(value = "X-Sharer-User-Id") Long ownerId,
+                                           @RequestBody ItemDto itemDto) {
         log.debug("Received POST request to /items endpoint with userId={} and {}", ownerId, itemDto);
         return ResponseEntity.ok().body(itemService.add(ownerId, itemDto));
     }

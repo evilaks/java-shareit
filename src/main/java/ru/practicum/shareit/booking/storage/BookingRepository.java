@@ -14,8 +14,8 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
     List<Booking> findAllByBookerIdOrderByStartTimeDesc(Long bookerId);
 
     List<Booking> findAllByBookerIdAndStartTimeBeforeAndEndTimeAfterOrderByStartTimeDesc(Long bookerId,
-                                                                     LocalDateTime startTime,
-                                                                     LocalDateTime endTime);
+                                                                                         LocalDateTime startTime,
+                                                                                         LocalDateTime endTime);
 
     List<Booking> findAllByBookerIdAndEndTimeBeforeOrderByStartTimeDesc(Long bookerId, LocalDateTime endTime);
 
@@ -24,8 +24,8 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
     List<Booking> findAllByBookerIdAndStatusOrderByStartTimeDesc(Long bookerId, BookingStatus status);
 
     List<Booking> findAllByItemOwnerIdAndStartTimeBeforeAndEndTimeAfterOrderByStartTimeDesc(Long ownerId,
-                                                                     LocalDateTime startTime,
-                                                                     LocalDateTime endTime);
+                                                                                            LocalDateTime startTime,
+                                                                                            LocalDateTime endTime);
 
     List<Booking> findAllByItemOwnerIdAndEndTimeBeforeOrderByStartTimeDesc(Long ownerId, LocalDateTime endTime);
 
@@ -44,7 +44,7 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
                                                                                      BookingStatus status);
 
     Boolean existsByItemIdAndBookerIdAndStatusAndEndTimeBefore(Long itemId,
-                                                             Long userId,
-                                                             BookingStatus status,
-                                                             LocalDateTime endTime);
+                                                               Long userId,
+                                                               BookingStatus status,
+                                                               LocalDateTime endTime);
 }
