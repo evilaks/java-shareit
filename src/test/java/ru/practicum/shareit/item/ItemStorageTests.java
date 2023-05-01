@@ -80,30 +80,27 @@ public class ItemStorageTests {
     }
 
     private void testInit() {
-        User testUser1 = User.builder()
-                .id(1L)
-                .name("username")
-                .email("user@example.com")
-                .build();
+        User testUser1 = new User();
+        testUser1.setId(1L);
+        testUser1.setName("username");
+        testUser1.setEmail("user@example.com");
 
-        User testUser2 = User.builder()
-                .id(2L)
-                .name("second_username")
-                .email("seconduser@example.com")
-                .build();
+        User testUser2 = new User();
+        testUser2.setId(2L);
+        testUser2.setName("second_username");
+        testUser2.setEmail("seconduser@example.com");
 
-        testItem1 = Item.builder()
-                .name("itemname")
-                .description("itemdesc")
-                .isAvailable(true)
-                .owner(testUser1)
-                .build();
+        testItem1 = new Item();
+        testItem1.setName("itemname");
+        testItem1.setDescription("itemdesc");
+        testItem1.setIsAvailable(true);
+        testItem1.setOwner(testUser1);
 
-        testItem2 = Item.builder()
-                .name("seconditemname")
-                .description("seconditemdesc")
-                .isAvailable(true)
-                .owner(testUser2)
-                .build();
+        testItem2 = new Item();
+        testItem2.setName("seconditemname");
+        testItem2.setDescription("seconditemdesc");
+        testItem2.setIsAvailable(true);
+        testItem2.setOwner(testUser2);
     }
+
 }

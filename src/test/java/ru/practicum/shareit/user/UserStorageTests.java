@@ -77,14 +77,13 @@ public class UserStorageTests {
     }
 
     private void testInit() {
-        testUser1 = User.builder()
-                .name("username")
-                .email("user@example.com")
-                .build();
+        testUser1 = new User();
+        testUser1.setName("username");
+        testUser1.setEmail("user@example.com");
 
-        testUser2 = User.builder()
-                .name("second_username")
-                .email("seconduser@example.com")
-                .build();
+        testUser2 = new User();
+        testUser2.setName("second_username");
+        testUser2.setEmail("seconduser@example.com");
     }
+
 }
