@@ -52,7 +52,7 @@ class UserServiceTests {
     }
 
     @Test
-    void findById_userExists() {
+    void testFindById_userExists() {
         when(userRepository.findById(1L)).thenReturn(Optional.of(user));
         when(userDtoMapper.toUserDto(user)).thenReturn(userDto);
 
@@ -61,13 +61,13 @@ class UserServiceTests {
     }
 
     @Test
-    void findById_userNotFound() {
+    void testFindById_userNotFound() {
         when(userRepository.findById(1L)).thenReturn(Optional.empty());
         assertThrows(NotFoundException.class, () -> userService.findById(1L));
     }
 
     @Test
-    void findAll() {
+    void testFindAll() {
         List<User> users = Arrays.asList(user, new User(2L, "Jane Doe", "jane.doe@example.com"));
         when(userRepository.findAll()).thenReturn(users);
         when(userDtoMapper.toUserDto(any(User.class))).thenReturn(userDto);
@@ -77,7 +77,7 @@ class UserServiceTests {
     }
 
     @Test
-    void add_validUser() {
+    void testAdd_validUser() {
         when(userDtoMapper.toUser(userDto)).thenReturn(user);
         when(userRepository.save(user)).thenReturn(user);
         when(userDtoMapper.toUserDto(user)).thenReturn(userDto);
@@ -87,13 +87,13 @@ class UserServiceTests {
     }
 
     @Test
-    void add_invalidUser() {
+    void testAdd_invalidUser() {
         UserDto invalidUserDto = new UserDto(1L, "", "invalid.email");
         assertThrows(BadRequestException.class, () -> userService.add(invalidUserDto));
     }
 
     @Test
-    void update_existingUser() {
+    void testUpdate_existingUser() {
         when(userRepository.findById(1L)).thenReturn(Optional.of(user));
         when(userRepository.save(user)).thenReturn(user);
         when(userDtoMapper.toUserDto(user)).thenReturn(userDto);
@@ -103,20 +103,20 @@ class UserServiceTests {
     }
 
     @Test
-    void update_nonExistingUser() {
+    void testUpdate_nonExistingUser() {
         when(userRepository.findById(1L)).thenReturn(Optional.empty());
         assertThrows(NotFoundException.class, () -> userService.update(1L, userDto));
     }
 
     @Test
-    void delete_existingUser() {
+    void testDelete_existingUser() {
         when(userRepository.findById(1L)).thenReturn(Optional.of(user));
         userService.delete(1L);
         verify(userRepository).deleteById(1L);
     }
 
     @Test
-    void delete_nonExistingUser() {
+    void testDelete_nonExistingUser() {
         when(userRepository.findById(1L)).thenReturn(Optional.empty());
         assertThrows(NotFoundException.class, () -> userService.delete(1L));
     }

@@ -40,7 +40,7 @@ public class ItemRequestControllerTests {
     }
 
     @Test
-    public void createItemRequest() throws Exception {
+    public void testCreateItemRequest() throws Exception {
         when(itemRequestService.createItemRequest(1L, itemRequestDto)).thenReturn(itemRequestDto);
 
         mockMvc.perform(post("/requests")
@@ -56,7 +56,7 @@ public class ItemRequestControllerTests {
     }
 
     @Test
-    public void getUserItemRequests() throws Exception {
+    public void testGetUserItemRequests() throws Exception {
         List<ItemRequestDto> itemRequestDtoList = Collections.singletonList(itemRequestDto);
         when(itemRequestService.getUserItemRequests(1L)).thenReturn(itemRequestDtoList);
 
@@ -71,7 +71,7 @@ public class ItemRequestControllerTests {
     }
 
     @Test
-    public void getOtherUsersItemRequests() throws Exception {
+    public void testGetOtherUsersItemRequests() throws Exception {
         List<ItemRequestDto> itemRequestDtoList = Collections.singletonList(itemRequestDto);
         when(itemRequestService.getOtherUsersItemRequests(1L, 0, 100)).thenReturn(itemRequestDtoList);
 
@@ -86,7 +86,7 @@ public class ItemRequestControllerTests {
     }
 
     @Test
-    public void getItemRequestById() throws Exception {
+    public void testGetItemRequestById() throws Exception {
         when(itemRequestService.getItemRequestById(1L, 1L)).thenReturn(itemRequestDto);
 
         mockMvc.perform(get("/requests/1")

@@ -16,7 +16,6 @@ import ru.practicum.shareit.item.dto.*;
 import ru.practicum.shareit.item.service.ItemServiceImpl;
 import ru.practicum.shareit.item.storage.CommentRepository;
 import ru.practicum.shareit.item.storage.ItemRepository;
-import ru.practicum.shareit.item.storage.ItemStorage;
 import ru.practicum.shareit.user.dto.UserDto;
 import ru.practicum.shareit.user.dto.UserDtoMapper;
 import ru.practicum.shareit.user.model.User;
@@ -37,9 +36,6 @@ import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class ItemServiceTests {
-
-    @Mock
-    private ItemStorage itemStorage;
 
     @Mock
     private ItemRepository itemRepository;
@@ -107,7 +103,7 @@ class ItemServiceTests {
     }
 
     @Test
-    void findById_itemExists() {
+    void testFindById_itemExists() {
         when(itemRepository.findById(itemId)).thenReturn(Optional.of(item));
         when(userService.findById(userId)).thenReturn(userDto);
 
@@ -134,7 +130,7 @@ class ItemServiceTests {
     }
 
     @Test
-    void findById_itemDoesNotExist() {
+    void testFindById_itemDoesNotExist() {
         when(itemRepository.findById(itemId)).thenReturn(Optional.empty());
         when(userService.findById(userId)).thenReturn(userDto);
 
@@ -142,7 +138,7 @@ class ItemServiceTests {
     }
 
     @Test
-    void findAll_validParameters() {
+    void testFindAll_validParameters() {
         when(userService.findById(userId)).thenReturn(userDto);
 
         ItemWithBookingsDto expectedItemDto = ItemWithBookingsDto.builder().build();
@@ -157,7 +153,7 @@ class ItemServiceTests {
     }
 
     @Test
-    void findAll_invalidParameters() {
+    void testFindAll_invalidParameters() {
         when(userService.findById(userId)).thenReturn(userDto);
 
         assertThrows(ValidationException.class, () -> itemService.findAll(userId, -1, 10));
@@ -165,7 +161,7 @@ class ItemServiceTests {
     }
 
     @Test
-    void add_validItem() {
+    void testAdd_validItem() {
         when(itemDtoMapper.toItem(itemDto, user, null)).thenReturn(item);
         when(userService.findById(userId)).thenReturn(userDto);
         when(itemRepository.save(item)).thenReturn(item);
@@ -176,14 +172,14 @@ class ItemServiceTests {
     }
 
     @Test
-    void add_invalidItem() {
+    void testAdd_invalidItem() {
         ItemDto itemDto = ItemDto.builder().build();
 
         assertThrows(ValidationException.class, () -> itemService.add(userId, itemDto));
     }
 
     @Test
-    void update_validItem() {
+    void testUpdate_validItem() {
         when(userService.findById(userId)).thenReturn(userDto);
         when(itemRepository.findById(itemId)).thenReturn(Optional.of(item));
 
@@ -192,7 +188,7 @@ class ItemServiceTests {
         itemDto.setDescription("Updated Description");
         itemDto.setAvailable(true);
 
-        when(itemStorage.update(itemId, item)).thenReturn(item);
+        when(itemRepository.save(item)).thenReturn(item);
         when(itemDtoMapper.toItemDto(item)).thenReturn(itemDto);
 
         ItemDto updatedItemDto = itemService.update(userId, itemId, itemDto);
@@ -203,7 +199,7 @@ class ItemServiceTests {
     }
 
     @Test
-    void update_itemNotFound() {
+    void testUpdate_itemNotFound() {
         when(userService.findById(userId)).thenReturn(userDto);
         when(itemRepository.findById(itemId)).thenReturn(Optional.empty());
 
@@ -213,17 +209,17 @@ class ItemServiceTests {
     }
 
     @Test
-    void delete_validItem() {
+    void testDelete_validItem() {
         when(userService.findById(userId)).thenReturn(userDto);
         when(itemRepository.findById(itemId)).thenReturn(Optional.of(item));
 
         itemService.delete(userId, itemId);
 
-        verify(itemStorage, times(1)).delete(itemId);
+        verify(itemRepository, times(1)).delete(item);
     }
 
     @Test
-    void delete_itemNotFound() {
+    void testDelete_itemNotFound() {
         when(userService.findById(userId)).thenReturn(userDto);
         when(itemRepository.findById(itemId)).thenReturn(Optional.empty());
 
@@ -231,7 +227,7 @@ class ItemServiceTests {
     }
 
     @Test
-    void addComment_validComment() {
+    void testAddComment_validComment() {
         when(userService.findById(userId)).thenReturn(userDto);
         when(itemRepository.findById(itemId)).thenReturn(Optional.of(item));
         when(bookingRepository.existsByItemIdAndBookerIdAndStatusAndEndTimeBefore(eq(itemId),
@@ -253,7 +249,7 @@ class ItemServiceTests {
     }
 
     @Test
-    void addComment_emptyComment() {
+    void testAddComment_emptyComment() {
         when(userService.findById(userId)).thenReturn(userDto);
 
         Comment comment = new Comment();
@@ -263,7 +259,7 @@ class ItemServiceTests {
     }
 
     @Test
-    void search_validSearch() {
+    void testSearch_validSearch() {
         when(userService.findById(userId)).thenReturn(userDto);
         List<Item> itemList = new ArrayList<>();
         itemList.add(item);
@@ -276,17 +272,17 @@ class ItemServiceTests {
     }
 
     @Test
-    void delete_validDelete() {
+    void testDelete_validDelete() {
         when(userService.findById(userId)).thenReturn(userDto);
         when(itemRepository.findById(itemId)).thenReturn(Optional.of(item));
 
         itemService.delete(userId, itemId);
 
-        verify(itemStorage).delete(itemId);
+        verify(itemRepository).delete(item);
     }
 
     @Test
-    void delete_notAllowedToDelete() {
+    void testDelete_notAllowedToDelete() {
         when(userService.findById(userId)).thenReturn(userDto);
         Item itemWithDifferentOwner = new Item();
         User differentOwner = new User();
@@ -298,7 +294,7 @@ class ItemServiceTests {
     }
 
     @Test
-    void delete_notFound() {
+    void testDelete_notFound() {
         when(userService.findById(userId)).thenReturn(userDto);
         when(itemRepository.findById(itemId)).thenReturn(Optional.empty());
 

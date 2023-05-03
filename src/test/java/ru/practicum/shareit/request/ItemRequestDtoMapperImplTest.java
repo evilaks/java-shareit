@@ -76,6 +76,7 @@ public class ItemRequestDtoMapperImplTest {
         itemRequestDto.setId(1L);
         itemRequestDto.setDescription("Item request description");
         itemRequestDto.setCreated("2021-01-01T00:00:00.000");
+        itemRequestDto.setItems(List.of(new ItemDto(1L, "Item 1", "Item description 1", true, 1L)));
 
         User author = new User();
         author.setId(1L);
@@ -93,4 +94,5 @@ public class ItemRequestDtoMapperImplTest {
         assertThat(itemRequest.getAuthor().getId()).isEqualTo(1L);
         assertThat(itemRequest.getAuthor().getName()).isEqualTo("User 1");
     }
+
 }

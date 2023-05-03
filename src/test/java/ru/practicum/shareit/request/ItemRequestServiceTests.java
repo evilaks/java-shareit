@@ -55,7 +55,7 @@ class ItemRequestServiceTests {
     }
 
     @Test
-    void createItemRequest_validRequest() {
+    void testCreateItemRequest_validRequest() {
         when(userService.findById(1L)).thenReturn(new UserDto(1L, "John Doe", "john.doe@example.com"));
         when(itemRequestDtoMapper.toItemRequest(itemRequestDto, user)).thenReturn(itemRequest);
         when(itemRequestRepository.save(itemRequest)).thenReturn(itemRequest);
@@ -67,13 +67,13 @@ class ItemRequestServiceTests {
     }
 
     @Test
-    void createItemRequest_invalidRequest() {
+    void testCreateItemRequest_invalidRequest() {
         ItemRequestDto invalidItemRequestDto = new ItemRequestDto(1L, "", null, new ArrayList<>());
         assertThrows(ValidationException.class, () -> itemRequestService.createItemRequest(1L, invalidItemRequestDto));
     }
 
     @Test
-    void getUserItemRequests() {
+    void testGetUserItemRequests() {
         List<ItemRequest> itemRequests = Collections.singletonList(itemRequest);
         when(userService.findById(1L)).thenReturn(new UserDto(1L, "John Doe", "john.doe@example.com"));
         when(itemRequestRepository.findAllByAuthorId(1L)).thenReturn(itemRequests);
@@ -84,7 +84,7 @@ class ItemRequestServiceTests {
     }
 
     @Test
-    void getOtherUsersItemRequests() {
+    void testGetOtherUsersItemRequests() {
         List<ItemRequest> itemRequests = Collections.singletonList(itemRequest);
         when(userService.findById(1L)).thenReturn(new UserDto(1L, "John Doe", "john.doe@example.com"));
         when(itemRequestRepository.findAllByAuthorIdNot(eq(1L), any())).thenReturn(itemRequests);
@@ -95,7 +95,7 @@ class ItemRequestServiceTests {
     }
 
     @Test
-    void getItemRequestById_found() {
+    void testGetItemRequestById_found() {
         when(userService.findById(1L)).thenReturn(new UserDto(1L, "John Doe", "john.doe@example.com"));
         when(itemRequestRepository.findById(1L)).thenReturn(Optional.of(itemRequest));
         when(itemRequestDtoMapper.toItemRequestDto(itemRequest, itemRequest.getItems())).thenReturn(itemRequestDto);
@@ -105,7 +105,7 @@ class ItemRequestServiceTests {
     }
 
     @Test
-    void getItemRequestById_notFound() {
+    void testGetItemRequestById_notFound() {
         when(userService.findById(1L)).thenReturn(new UserDto(1L, "John Doe", "john.doe@example.com"));
         when(itemRequestRepository.findById(1L)).thenReturn(Optional.empty());
 

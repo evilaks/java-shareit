@@ -12,7 +12,6 @@ import ru.practicum.shareit.item.model.Comment;
 import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.item.storage.CommentRepository;
 import ru.practicum.shareit.item.storage.ItemRepository;
-import ru.practicum.shareit.item.storage.ItemStorage;
 import ru.practicum.shareit.request.model.ItemRequest;
 import ru.practicum.shareit.request.storage.ItemRequestRepository;
 import ru.practicum.shareit.user.dto.UserDto;
@@ -34,7 +33,6 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class ItemServiceImpl implements ItemService {
 
-    private final ItemStorage itemStorage;
     private final ItemRepository itemRepository;
     private final UserService userService;
     private final ItemDtoMapper itemDtoMapper;
@@ -114,7 +112,7 @@ public class ItemServiceImpl implements ItemService {
         if (itemDto.getDescription() != null) itemToUpdate.setDescription(itemDto.getDescription());
         if (itemDto.getAvailable() != null) itemToUpdate.setIsAvailable(itemDto.getAvailable());
 
-        return itemDtoMapper.toItemDto(itemStorage.update(itemId, itemToUpdate));
+        return itemDtoMapper.toItemDto(itemRepository.save(itemToUpdate));
     }
 
     @Override
@@ -172,7 +170,7 @@ public class ItemServiceImpl implements ItemService {
         if (itemToDelete == null) throw new NotFoundException("Item not found");
         if (itemToDelete.getOwner().getId() != userId) throw new NotAllowedException("Item delete is not allowed to that user");
 
-        itemStorage.delete(itemId);
+        itemRepository.delete(itemToDelete);
     }
 
     private boolean isValidItem(ItemDto itemDto) {

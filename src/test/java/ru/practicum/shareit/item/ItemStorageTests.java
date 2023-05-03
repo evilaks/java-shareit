@@ -8,6 +8,7 @@ import ru.practicum.shareit.item.storage.ItemStorage;
 import ru.practicum.shareit.user.model.User;
 
 import java.util.List;
+import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -18,6 +19,7 @@ public class ItemStorageTests {
 
     private Item testItem1;
     private Item testItem2;
+    private Item testItem3;
 
 
     @BeforeEach
@@ -79,6 +81,19 @@ public class ItemStorageTests {
         assertThat(itemStorage.findById(1L)).isNull();
     }
 
+    @Test
+    public void searchTest() {
+        itemStorage.add(testItem1);
+        itemStorage.add(testItem2);
+        itemStorage.add(testItem3);
+
+        Set<Item> actual = itemStorage.search("item");
+
+        assertThat(actual).isNotEmpty();
+        assertThat(actual).size().isEqualTo(2);
+        assertThat(actual).contains(testItem1, testItem2);
+    }
+
     private void testInit() {
         User testUser1 = new User();
         testUser1.setId(1L);
@@ -101,6 +116,12 @@ public class ItemStorageTests {
         testItem2.setDescription("seconditemdesc");
         testItem2.setIsAvailable(true);
         testItem2.setOwner(testUser2);
+
+        testItem3 = new Item();
+        testItem3.setName("third");
+        testItem3.setDescription("third");
+        testItem3.setIsAvailable(true);
+        testItem3.setOwner(testUser2);
     }
 
 }

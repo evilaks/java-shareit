@@ -109,7 +109,7 @@ class BookingServiceTests {
     }
 
     @Test
-    void createBooking_success() {
+    void testCreateBooking_success() {
         when(itemService.findById(incomingBookingDto.getItemId(), booker.getId())).thenReturn(itemDto);
         when(itemRepository.findById(incomingBookingDto.getItemId())).thenReturn(Optional.of(item));
         when(userRepository.findById(booker.getId())).thenReturn(Optional.of(booker));
@@ -123,7 +123,7 @@ class BookingServiceTests {
     }
 
     @Test
-    void createBooking_itemNotAvailable() {
+    void testCreateBooking_itemNotAvailable() {
         itemDto.setAvailable(false);
         when(itemService.findById(incomingBookingDto.getItemId(), user.getId())).thenReturn(itemDto);
 
@@ -131,9 +131,8 @@ class BookingServiceTests {
     }
 
     @Test
-    void createBooking_bookerIsOwnerOfItem() {
+    void testCreateBooking_bookerIsOwnerOfItem() {
 
-        // Update the itemDto to match the changes in the item
         itemDto = ItemWithBookingsDto.builder()
                 .id(item.getId())
                 .available(true)
@@ -151,7 +150,7 @@ class BookingServiceTests {
 
 
     @Test
-    void createBooking_invalidBooking() {
+    void testCreateBooking_invalidBooking() {
         incomingBookingDto.setStart(null);
         when(itemService.findById(incomingBookingDto.getItemId(), user.getId())).thenReturn(itemDto);
 
@@ -159,7 +158,7 @@ class BookingServiceTests {
     }
 
     @Test
-    void updateBookingApproval_success() {
+    void testUpdateBookingApproval_success() {
         when(bookingRepository.findById(booking.getId())).thenReturn(Optional.of(booking));
         when(userService.findById(user.getId())).thenReturn(userDto);
         when(bookingRepository.save(booking)).thenReturn(booking);
@@ -171,14 +170,14 @@ class BookingServiceTests {
     }
 
     @Test
-    void updateBookingApproval_bookingNotFound() {
+    void testUpdateBookingApproval_bookingNotFound() {
         when(bookingRepository.findById(booking.getId())).thenReturn(Optional.empty());
 
         assertThrows(NotFoundException.class, () -> bookingService.updateBookingApproval(booking.getId(), user.getId(), true));
     }
 
     @Test
-    void updateBookingApproval_userNotFound() {
+    void testUpdateBookingApproval_userNotFound() {
         when(bookingRepository.findById(booking.getId())).thenReturn(Optional.of(booking));
         when(userService.findById(user.getId())).thenThrow(new NotFoundException("User not found"));
 
@@ -186,7 +185,7 @@ class BookingServiceTests {
     }
 
     @Test
-    void getBookingById_success() {
+    void testGetBookingById_success() {
         when(bookingRepository.findById(booking.getId())).thenReturn(Optional.of(booking));
         when(bookingDtoMapper.toDto(booking)).thenReturn(outgoingBookingDto);
 
@@ -196,21 +195,21 @@ class BookingServiceTests {
     }
 
     @Test
-    void getBookingById_bookingNotFound() {
+    void testGetBookingById_bookingNotFound() {
         when(bookingRepository.findById(booking.getId())).thenReturn(Optional.empty());
 
         assertThrows(NotFoundException.class, () -> bookingService.getBookingById(user.getId(), booking.getId()));
     }
 
     @Test
-    void getBookingById_userNotOwnerNorBooker() {
+    void testGetBookingById_userNotOwnerNorBooker() {
         when(bookingRepository.findById(booking.getId())).thenReturn(Optional.of(booking));
 
         assertThrows(NotFoundException.class, () -> bookingService.getBookingById(-1L, booking.getId()));
     }
 
     @Test
-    void getBookingsByState_success() {
+    void testGetBookingsByState_success() {
         List<Booking> bookings = Collections.singletonList(booking);
         when(userService.findById(user.getId())).thenReturn(userDto);
         when(bookingRepository.findAllByBookerIdOrderByStartTimeDesc(any(), any())).thenReturn(bookings);
@@ -223,17 +222,82 @@ class BookingServiceTests {
     }
 
     @Test
-    void getBookingsByState_invalidFromOrSize() {
+    void testGetBookingsByState_current() {
+        List<Booking> bookings = Collections.singletonList(booking);
+        when(userService.findById(user.getId())).thenReturn(userDto);
+        when(bookingRepository.findAllByBookerIdAndStartTimeBeforeAndEndTimeAfterOrderByStartTimeDesc(any(), any(), any(), any())).thenReturn(bookings);
+        when(bookingDtoMapper.toDto(booking)).thenReturn(outgoingBookingDto);
+
+        List<OutgoingBookingDto> results = bookingService.getBookingsByState(user.getId(), "CURRENT", 0, 1);
+
+        assertEquals(1, results.size());
+        assertEquals(outgoingBookingDto.getId(), results.get(0).getId());
+    }
+
+    @Test
+    void testGetBookingsByState_past() {
+        List<Booking> bookings = Collections.singletonList(booking);
+        when(userService.findById(user.getId())).thenReturn(userDto);
+        when(bookingRepository.findAllByBookerIdAndEndTimeBeforeOrderByStartTimeDesc(any(), any(), any())).thenReturn(bookings);
+        when(bookingDtoMapper.toDto(booking)).thenReturn(outgoingBookingDto);
+
+        List<OutgoingBookingDto> results = bookingService.getBookingsByState(user.getId(), "PAST", 0, 1);
+
+        assertEquals(1, results.size());
+        assertEquals(outgoingBookingDto.getId(), results.get(0).getId());
+    }
+
+    @Test
+    void testGetBookingsByState_future() {
+        List<Booking> bookings = Collections.singletonList(booking);
+        when(userService.findById(user.getId())).thenReturn(userDto);
+        when(bookingRepository.findAllByBookerIdAndStartTimeAfterOrderByStartTimeDesc(any(), any(), any())).thenReturn(bookings);
+        when(bookingDtoMapper.toDto(booking)).thenReturn(outgoingBookingDto);
+
+        List<OutgoingBookingDto> results = bookingService.getBookingsByState(user.getId(), "FUTURE", 0, 1);
+
+        assertEquals(1, results.size());
+        assertEquals(outgoingBookingDto.getId(), results.get(0).getId());
+    }
+
+    @Test
+    void testGetBookingsByState_waiting() {
+        List<Booking> bookings = Collections.singletonList(booking);
+        when(userService.findById(user.getId())).thenReturn(userDto);
+        when(bookingRepository.findAllByBookerIdAndStatusOrderByStartTimeDesc(any(), any(), any())).thenReturn(bookings);
+        when(bookingDtoMapper.toDto(booking)).thenReturn(outgoingBookingDto);
+
+        List<OutgoingBookingDto> results = bookingService.getBookingsByState(user.getId(), "WAITING", 0, 1);
+
+        assertEquals(1, results.size());
+        assertEquals(outgoingBookingDto.getId(), results.get(0).getId());
+    }
+
+    @Test
+    void testGetBookingsByState_rejected() {
+        List<Booking> bookings = Collections.singletonList(booking);
+        when(userService.findById(user.getId())).thenReturn(userDto);
+        when(bookingRepository.findAllByBookerIdAndStatusOrderByStartTimeDesc(any(), any(), any())).thenReturn(bookings);
+        when(bookingDtoMapper.toDto(booking)).thenReturn(outgoingBookingDto);
+
+        List<OutgoingBookingDto> results = bookingService.getBookingsByState(user.getId(), "REJECTED", 0, 1);
+
+        assertEquals(1, results.size());
+        assertEquals(outgoingBookingDto.getId(), results.get(0).getId());
+    }
+
+    @Test
+    void testGetBookingsByState_invalidFromOrSize() {
         assertThrows(ValidationException.class, () -> bookingService.getBookingsByState(user.getId(), "ALL", -1, 1));
     }
 
     @Test
-    void getBookingsByState_unknownState() {
+    void testGetBookingsByState_unknownState() {
         assertThrows(ValidationException.class, () -> bookingService.getBookingsByState(user.getId(), "UNKNOWN", 0, 1));
     }
 
     @Test
-    void getBookingsByOwnerAndState_success() {
+    void testGetBookingsByOwnerAndState_success() {
         List<Booking> bookings = Collections.singletonList(booking);
         when(userService.findById(user.getId())).thenReturn(userDto);
         when(bookingRepository.findAllByItemOwnerIdOrderByStartTimeDesc(any(), any())).thenReturn(bookings);
@@ -246,12 +310,64 @@ class BookingServiceTests {
     }
 
     @Test
-    void getBookingsByOwnerAndState_invalidFromOrSize() {
+    void testGetBookingsByOwnerAndState_past() {
+        List<Booking> bookings = Collections.singletonList(booking);
+        when(userService.findById(user.getId())).thenReturn(userDto);
+        when(bookingRepository.findAllByItemOwnerIdAndEndTimeBeforeOrderByStartTimeDesc(any(), any(), any())).thenReturn(bookings);
+        when(bookingDtoMapper.toDto(booking)).thenReturn(outgoingBookingDto);
+
+        List<OutgoingBookingDto> results = bookingService.getBookingsByOwnerAndState(user.getId(), "PAST", 0, 1);
+
+        assertEquals(1, results.size());
+        assertEquals(outgoingBookingDto.getId(), results.get(0).getId());
+    }
+
+    @Test
+    void testGetBookingsByOwnerAndState_future() {
+        List<Booking> bookings = Collections.singletonList(booking);
+        when(userService.findById(user.getId())).thenReturn(userDto);
+        when(bookingRepository.findAllByItemOwnerIdAndStartTimeAfterOrderByStartTimeDesc(any(), any(), any())).thenReturn(bookings);
+        when(bookingDtoMapper.toDto(booking)).thenReturn(outgoingBookingDto);
+
+        List<OutgoingBookingDto> results = bookingService.getBookingsByOwnerAndState(user.getId(), "FUTURE", 0, 1);
+
+        assertEquals(1, results.size());
+        assertEquals(outgoingBookingDto.getId(), results.get(0).getId());
+    }
+
+    @Test
+    void testGetBookingsByOwnerAndState_waiting() {
+        List<Booking> bookings = Collections.singletonList(booking);
+        when(userService.findById(user.getId())).thenReturn(userDto);
+        when(bookingRepository.findAllByItemOwnerIdAndStatusOrderByStartTimeDesc(any(), any(), any())).thenReturn(bookings);
+        when(bookingDtoMapper.toDto(booking)).thenReturn(outgoingBookingDto);
+
+        List<OutgoingBookingDto> results = bookingService.getBookingsByOwnerAndState(user.getId(), "WAITING", 0, 1);
+
+        assertEquals(1, results.size());
+        assertEquals(outgoingBookingDto.getId(), results.get(0).getId());
+    }
+
+    @Test
+    void testGetBookingsByOwnerAndState_rejected() {
+        List<Booking> bookings = Collections.singletonList(booking);
+        when(userService.findById(user.getId())).thenReturn(userDto);
+        when(bookingRepository.findAllByItemOwnerIdAndStatusOrderByStartTimeDesc(any(), any(), any())).thenReturn(bookings);
+        when(bookingDtoMapper.toDto(booking)).thenReturn(outgoingBookingDto);
+
+        List<OutgoingBookingDto> results = bookingService.getBookingsByOwnerAndState(user.getId(), "REJECTED", 0, 1);
+
+        assertEquals(1, results.size());
+        assertEquals(outgoingBookingDto.getId(), results.get(0).getId());
+    }
+
+    @Test
+    void testGetBookingsByOwnerAndState_invalidFromOrSize() {
         assertThrows(ValidationException.class, () -> bookingService.getBookingsByOwnerAndState(user.getId(), "ALL", -1, 1));
     }
 
     @Test
-    void getBookingsByOwnerAndState_unknownState() {
+    void testGetBookingsByOwnerAndState_unknownState() {
         assertThrows(ValidationException.class, () -> bookingService.getBookingsByOwnerAndState(user.getId(), "UNKNOWN", 0, 1));
     }
 
