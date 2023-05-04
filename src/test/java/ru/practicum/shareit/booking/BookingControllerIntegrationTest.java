@@ -26,7 +26,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @AutoConfigureMockMvc
 @SqlGroup({
         @Sql(executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD, scripts = "classpath:test-data.sql"),
-        @Sql(executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD, scripts = "classpath:data.sql")
+        @Sql(executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD, scripts = "classpath:clean-data.sql")
 })
 public class BookingControllerIntegrationTest {
 
@@ -68,11 +68,11 @@ public class BookingControllerIntegrationTest {
     @Test
     void testUpdateBookingApproval() throws Exception {
         Long bookingId = 1L;
-        Boolean approved = true;
+        boolean approved = true;
 
         mockMvc.perform(patch("/bookings/{bookingId}", bookingId)
                         .header("X-Sharer-User-Id", 4L)
-                        .param("approved", approved.toString()))
+                        .param("approved", Boolean.toString(approved)))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$.id").value(bookingId))

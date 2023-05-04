@@ -61,10 +61,11 @@ public class ItemController {
     }
 
     @DeleteMapping("/{itemId}")
-    public void deleteItemById(@RequestHeader(value = "X-Sharer-User-Id") Long userId,
+    public ResponseEntity<Void> deleteItemById(@RequestHeader(value = "X-Sharer-User-Id") Long userId,
                                @PathVariable Long itemId) {
         log.debug("Received DELETE request to /items/{} endpoint with userId={}", itemId, userId);
         itemService.delete(userId, itemId);
+        return ResponseEntity.ok().build();
     }
 
     // POST /items/{itemId}/comment
