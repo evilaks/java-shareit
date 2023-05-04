@@ -1,6 +1,7 @@
 package ru.practicum.shareit.booking.service;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.shareit.booking.dto.IncomingBookingDto;
@@ -121,46 +122,57 @@ public class BookingServiceImpl implements BookingService {
     }
 
     @Override
-    public List<OutgoingBookingDto> getBookingsByState(Long userId, String state) {
+    public List<OutgoingBookingDto> getBookingsByState(Long userId, String state, Integer from, Integer size) {
 
         // throw 404 if user not found
         userService.findById(userId);
 
+        // validate from and size
+        if (from < 0 || size < 1) {
+            throw new ValidationException("Invalid from or size");
+        }
+
+        // convert from to page
+        int page = from > 0 ? from / size : 0;
+
         switch (state) {
             case "CURRENT":
                 return bookingRepository.findAllByBookerIdAndStartTimeBeforeAndEndTimeAfterOrderByStartTimeDesc(userId,
-                        LocalDateTime.now(), LocalDateTime.now()).stream()
+                        LocalDateTime.now(), LocalDateTime.now(), PageRequest.of(page, size)).stream()
                         .map(bookingDtoMapper::toDto)
                         .collect(Collectors.toList());
 
             case "PAST":
                 return bookingRepository.findAllByBookerIdAndEndTimeBeforeOrderByStartTimeDesc(userId,
-                        LocalDateTime.now())
+                        LocalDateTime.now(), PageRequest.of(page, size))
                         .stream()
                         .map(bookingDtoMapper::toDto)
                         .collect(Collectors.toList());
 
             case "FUTURE":
                 return bookingRepository.findAllByBookerIdAndStartTimeAfterOrderByStartTimeDesc(userId,
-                        LocalDateTime.now())
+                        LocalDateTime.now(), PageRequest.of(page, size))
                         .stream()
                         .map(bookingDtoMapper::toDto)
                         .collect(Collectors.toList());
 
             case "WAITING":
-                return bookingRepository.findAllByBookerIdAndStatusOrderByStartTimeDesc(userId, BookingStatus.WAITING)
+                return bookingRepository.findAllByBookerIdAndStatusOrderByStartTimeDesc(userId,
+                                BookingStatus.WAITING,
+                                PageRequest.of(page, size))
                         .stream()
                         .map(bookingDtoMapper::toDto)
                         .collect(Collectors.toList());
 
             case "REJECTED":
-                return bookingRepository.findAllByBookerIdAndStatusOrderByStartTimeDesc(userId, BookingStatus.REJECTED)
+                return bookingRepository.findAllByBookerIdAndStatusOrderByStartTimeDesc(userId,
+                                BookingStatus.REJECTED, PageRequest.of(page, size))
                         .stream()
                         .map(bookingDtoMapper::toDto)
                         .collect(Collectors.toList());
 
             case "ALL":
-                return bookingRepository.findAllByBookerIdOrderByStartTimeDesc(userId)
+                return bookingRepository.findAllByBookerIdOrderByStartTimeDesc(userId, PageRequest.of(page, size))
                         .stream()
                         .map(bookingDtoMapper::toDto)
                         .collect(Collectors.toList());
@@ -171,49 +183,57 @@ public class BookingServiceImpl implements BookingService {
     }
 
     @Override
-    public List<OutgoingBookingDto> getBookingsByOwnerAndState(Long ownerId, String state) {
+    public List<OutgoingBookingDto> getBookingsByOwnerAndState(Long ownerId, String state, Integer from, Integer size) {
 
         // throw 404 if user not found
         userService.findById(ownerId);
+
+        // validate from and size
+        if (from < 0 || size < 1) {
+            throw new ValidationException("Invalid from or size");
+        }
+
+        // convert from to page
+        int page = from > 0 ? from / size : 0;
 
         switch (state) {
             case "CURRENT":
                 return bookingRepository.findAllByItemOwnerIdAndStartTimeBeforeAndEndTimeAfterOrderByStartTimeDesc(
                                 ownerId,
-                                LocalDateTime.now(), LocalDateTime.now()).stream()
+                                LocalDateTime.now(), LocalDateTime.now(), PageRequest.of(page, size)).stream()
                                 .map(bookingDtoMapper::toDto)
                                 .collect(Collectors.toList());
 
             case "PAST":
                 return bookingRepository.findAllByItemOwnerIdAndEndTimeBeforeOrderByStartTimeDesc(ownerId,
-                                LocalDateTime.now())
+                                LocalDateTime.now(), PageRequest.of(page, size))
                         .stream()
                         .map(bookingDtoMapper::toDto)
                         .collect(Collectors.toList());
 
             case "FUTURE":
                 return bookingRepository.findAllByItemOwnerIdAndStartTimeAfterOrderByStartTimeDesc(ownerId,
-                                LocalDateTime.now())
+                                LocalDateTime.now(), PageRequest.of(page, size))
                         .stream()
                         .map(bookingDtoMapper::toDto)
                         .collect(Collectors.toList());
 
             case "WAITING":
                 return bookingRepository.findAllByItemOwnerIdAndStatusOrderByStartTimeDesc(ownerId,
-                        BookingStatus.WAITING)
+                        BookingStatus.WAITING, PageRequest.of(page, size))
                         .stream()
                         .map(bookingDtoMapper::toDto)
                         .collect(Collectors.toList());
 
             case "REJECTED":
                 return bookingRepository.findAllByItemOwnerIdAndStatusOrderByStartTimeDesc(ownerId,
-                        BookingStatus.REJECTED)
+                        BookingStatus.REJECTED, PageRequest.of(page, size))
                         .stream()
                         .map(bookingDtoMapper::toDto)
                         .collect(Collectors.toList());
 
             case "ALL":
-                return bookingRepository.findAllByItemOwnerIdOrderByStartTimeDesc(ownerId)
+                return bookingRepository.findAllByItemOwnerIdOrderByStartTimeDesc(ownerId, PageRequest.of(page, size))
                         .stream()
                         .map(bookingDtoMapper::toDto)
                         .collect(Collectors.toList());

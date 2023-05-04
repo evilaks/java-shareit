@@ -42,19 +42,23 @@ public class BookingController {
         return ResponseEntity.ok().body(outgoingBookingDto);
     }
 
-    // GET /bookings?state={state}
+    // GET /bookings?state={state}&from={from}&size={size}
     @GetMapping
     public ResponseEntity<List<OutgoingBookingDto>> getBookingsByState(@RequestHeader(value = "X-Sharer-User-Id") Long userId,
-                                                                       @RequestParam(defaultValue = "ALL") String state) {
-        List<OutgoingBookingDto> outgoingBookingDtos = bookingService.getBookingsByState(userId, state);
+                                                                       @RequestParam(defaultValue = "ALL") String state,
+                                                                       @RequestParam(defaultValue = "0") Integer from,
+                                                                       @RequestParam(defaultValue = "100") Integer size) {
+        List<OutgoingBookingDto> outgoingBookingDtos = bookingService.getBookingsByState(userId, state, from, size);
         return ResponseEntity.ok().body(outgoingBookingDtos);
     }
 
-    // GET /bookings/owner?state={state}
+    // GET /bookings/owner?state={state}&from={from}&size={size}
     @GetMapping("/owner")
     public ResponseEntity<List<OutgoingBookingDto>> getBookingsByOwnerAndState(@RequestHeader(value = "X-Sharer-User-Id") Long ownerId,
-                                                                               @RequestParam(defaultValue = "ALL") String state) {
-        List<OutgoingBookingDto> outgoingBookingDtos = bookingService.getBookingsByOwnerAndState(ownerId, state);
+                                                                               @RequestParam(defaultValue = "ALL") String state,
+                                                                               @RequestParam(defaultValue = "0") Integer from,
+                                                                               @RequestParam(defaultValue = "100") Integer size) {
+        List<OutgoingBookingDto> outgoingBookingDtos = bookingService.getBookingsByOwnerAndState(ownerId, state, from, size);
         return ResponseEntity.ok().body(outgoingBookingDtos);
     }
 }

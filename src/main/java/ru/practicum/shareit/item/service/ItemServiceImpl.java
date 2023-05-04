@@ -1,6 +1,7 @@
 package ru.practicum.shareit.item.service;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import ru.practicum.shareit.booking.dto.BookingDtoMapper;
 import ru.practicum.shareit.booking.dto.ItemBookingDto;
@@ -11,7 +12,8 @@ import ru.practicum.shareit.item.model.Comment;
 import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.item.storage.CommentRepository;
 import ru.practicum.shareit.item.storage.ItemRepository;
-import ru.practicum.shareit.item.storage.ItemStorage;
+import ru.practicum.shareit.request.model.ItemRequest;
+import ru.practicum.shareit.request.storage.ItemRequestRepository;
 import ru.practicum.shareit.user.dto.UserDto;
 import ru.practicum.shareit.user.dto.UserDtoMapper;
 import ru.practicum.shareit.user.service.UserService;
@@ -31,7 +33,6 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class ItemServiceImpl implements ItemService {
 
-    private final ItemStorage itemStorage;
     private final ItemRepository itemRepository;
     private final UserService userService;
     private final ItemDtoMapper itemDtoMapper;
@@ -40,6 +41,7 @@ public class ItemServiceImpl implements ItemService {
     private final BookingRepository bookingRepository;
     private final CommentRepository commentRepository;
     private final CommentDtoMapper commentDtoMapper;
+    private final ItemRequestRepository itemRequestRepository;
 
     @Override
     public ItemWithBookingsDto findById(long itemId, long userId) {
@@ -62,13 +64,19 @@ public class ItemServiceImpl implements ItemService {
     }
 
     @Override
-    public List<ItemWithBookingsDto> findAll(long userId) {
+    public List<ItemWithBookingsDto> findAll(long userId, Integer from, Integer size) {
 
         userService.findById(userId); // throws 404 if user not found
 
+        // validate from and size
+        if (from < 0 || size < 1) {
+            throw new ValidationException("Invalid from or size");
+        }
 
+        // convert from to page
+        int page = from > 0 ? from / size : 0;
 
-        return itemRepository.findAllByOwnerIdOrderById(userId).stream()
+        return itemRepository.findAllByOwnerIdOrderById(userId, PageRequest.of(page, size)).stream()
                 .map(this::addBookingsAndCommentsToItem)
                 .collect(Collectors.toList());
     }
@@ -79,7 +87,13 @@ public class ItemServiceImpl implements ItemService {
 
         if (this.isValidItem(itemDto)) {
             UserDto owner = userService.findById(userId); // throws 404 if user not found
-            Item newItem = itemRepository.save(itemDtoMapper.toItem(itemDto, userDtoMapper.toUser(owner)));
+
+            ItemRequest itemRequest = null;
+            if (itemDto.getRequestId() != null) {
+                itemRequest = itemRequestRepository.findById(itemDto.getRequestId()).orElse(null);
+            }
+
+            Item newItem = itemRepository.save(itemDtoMapper.toItem(itemDto, userDtoMapper.toUser(owner), itemRequest));
             itemDto.setId(newItem.getId());
             return itemDto;
         } else throw new ValidationException("Invalid item received");
@@ -98,14 +112,25 @@ public class ItemServiceImpl implements ItemService {
         if (itemDto.getDescription() != null) itemToUpdate.setDescription(itemDto.getDescription());
         if (itemDto.getAvailable() != null) itemToUpdate.setIsAvailable(itemDto.getAvailable());
 
-        return itemDtoMapper.toItemDto(itemStorage.update(itemId, itemToUpdate));
+        return itemDtoMapper.toItemDto(itemRepository.save(itemToUpdate));
     }
 
     @Override
-    public List<ItemDto> search(long userId, String request) {
+    public List<ItemDto> search(long userId, String request, Integer from, Integer size) {
         userService.findById(userId); // throws 404 if user not found
+
+        // validate from and size
+        if (from < 0 || size < 1) {
+            throw new ValidationException("Invalid from or size");
+        }
+
+        // convert from to page
+        int page = from > 0 ? from / size : 0;
+
         if (request.isBlank()) return new ArrayList<>();
-        return itemRepository.findByNameContainingIgnoreCaseOrDescriptionContainingIgnoreCaseAndIsAvailable(request, request, true).stream()
+
+        return itemRepository.findByNameContainingIgnoreCaseOrDescriptionContainingIgnoreCaseAndIsAvailable(request,
+                        request, true, PageRequest.of(page, size)).stream()
                 .map(itemDtoMapper::toItemDto)
                 .sorted(Comparator.comparing(ItemDto::getId))
                 .collect(Collectors.toList());
@@ -145,7 +170,7 @@ public class ItemServiceImpl implements ItemService {
         if (itemToDelete == null) throw new NotFoundException("Item not found");
         if (itemToDelete.getOwner().getId() != userId) throw new NotAllowedException("Item delete is not allowed to that user");
 
-        itemStorage.delete(itemId);
+        itemRepository.delete(itemToDelete);
     }
 
     private boolean isValidItem(ItemDto itemDto) {

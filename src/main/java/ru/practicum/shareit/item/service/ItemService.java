@@ -10,13 +10,13 @@ import java.util.List;
 public interface ItemService {
     ItemWithBookingsDto findById(long itemId, long userId);
 
-    List<ItemWithBookingsDto> findAll(long userId);
+    List<ItemWithBookingsDto> findAll(long userId, Integer from, Integer size);
 
     ItemDto add(long userId, ItemDto itemDto);
 
     ItemDto update(long userId, long itemId, ItemDto itemDto);
 
-    List<ItemDto> search(long userId, String request);
+    List<ItemDto> search(long userId, String request, Integer from, Integer size);
 
     CommentDto addComment(long userId, long itemId, Comment comment);
 
