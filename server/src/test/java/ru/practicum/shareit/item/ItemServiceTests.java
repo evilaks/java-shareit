@@ -172,13 +172,6 @@ class ItemServiceTests {
     }
 
     @Test
-    void testAdd_invalidItem() {
-        ItemDto itemDto = ItemDto.builder().build();
-
-        assertThrows(ValidationException.class, () -> itemService.add(userId, itemDto));
-    }
-
-    @Test
     void testUpdate_validItem() {
         when(userService.findById(userId)).thenReturn(userDto);
         when(itemRepository.findById(itemId)).thenReturn(Optional.of(item));

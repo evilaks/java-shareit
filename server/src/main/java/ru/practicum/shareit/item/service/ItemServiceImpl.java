@@ -85,18 +85,16 @@ public class ItemServiceImpl implements ItemService {
     @Override
     public ItemDto add(long userId, ItemDto itemDto) {
 
-        if (this.isValidItem(itemDto)) {
-            UserDto owner = userService.findById(userId); // throws 404 if user not found
+        UserDto owner = userService.findById(userId); // throws 404 if user not found
 
-            ItemRequest itemRequest = null;
-            if (itemDto.getRequestId() != null) {
-                itemRequest = itemRequestRepository.findById(itemDto.getRequestId()).orElse(null);
-            }
+        ItemRequest itemRequest = null;
+        if (itemDto.getRequestId() != null) {
+            itemRequest = itemRequestRepository.findById(itemDto.getRequestId()).orElse(null);
+        }
 
-            Item newItem = itemRepository.save(itemDtoMapper.toItem(itemDto, userDtoMapper.toUser(owner), itemRequest));
-            itemDto.setId(newItem.getId());
-            return itemDto;
-        } else throw new ValidationException("Invalid item received");
+        Item newItem = itemRepository.save(itemDtoMapper.toItem(itemDto, userDtoMapper.toUser(owner), itemRequest));
+        itemDto.setId(newItem.getId());
+        return itemDto;
     }
 
     @Transactional
@@ -118,11 +116,6 @@ public class ItemServiceImpl implements ItemService {
     @Override
     public List<ItemDto> search(long userId, String request, Integer from, Integer size) {
         userService.findById(userId); // throws 404 if user not found
-
-        // validate from and size
-        if (from < 0 || size < 1) {
-            throw new ValidationException("Invalid from or size");
-        }
 
         // convert from to page
         int page = from > 0 ? from / size : 0;
@@ -171,22 +164,6 @@ public class ItemServiceImpl implements ItemService {
         if (itemToDelete.getOwner().getId() != userId) throw new NotAllowedException("Item delete is not allowed to that user");
 
         itemRepository.delete(itemToDelete);
-    }
-
-    private boolean isValidItem(ItemDto itemDto) {
-        if (itemDto.getName() == null || itemDto.getName().isBlank()) {
-            return false;
-        }
-
-        if (itemDto.getDescription() == null || itemDto.getName().isBlank()) {
-            return false;
-        }
-
-        if (itemDto.getAvailable() == null) {
-            return false;
-        }
-
-        return true;
     }
 
     private ItemWithBookingsDto addBookingsAndCommentsToItem(Item item) {

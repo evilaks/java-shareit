@@ -78,7 +78,8 @@ public class BookingController {
     }
 
     private boolean isValidBooking(IncomingBookingDto incomingBookingDto) {
-        return incomingBookingDto.getStart() != null
+        return incomingBookingDto != null
+                && incomingBookingDto.getStart() != null
                 && incomingBookingDto.getEnd() != null
                 && incomingBookingDto.getItemId() != null
                 // starts before ends

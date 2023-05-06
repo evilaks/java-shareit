@@ -148,15 +148,6 @@ class BookingServiceTests {
         assertThrows(NotFoundException.class, () -> bookingService.createBooking(user.getId(), incomingBookingDto));
     }
 
-
-    @Test
-    void testCreateBooking_invalidBooking() {
-        incomingBookingDto.setStart(null);
-        when(itemService.findById(incomingBookingDto.getItemId(), user.getId())).thenReturn(itemDto);
-
-        assertThrows(ValidationException.class, () -> bookingService.createBooking(user.getId(), incomingBookingDto));
-    }
-
     @Test
     void testUpdateBookingApproval_success() {
         when(bookingRepository.findById(booking.getId())).thenReturn(Optional.of(booking));
@@ -287,11 +278,6 @@ class BookingServiceTests {
     }
 
     @Test
-    void testGetBookingsByState_invalidFromOrSize() {
-        assertThrows(ValidationException.class, () -> bookingService.getBookingsByState(user.getId(), "ALL", -1, 1));
-    }
-
-    @Test
     void testGetBookingsByState_unknownState() {
         assertThrows(ValidationException.class, () -> bookingService.getBookingsByState(user.getId(), "UNKNOWN", 0, 1));
     }
@@ -359,11 +345,6 @@ class BookingServiceTests {
 
         assertEquals(1, results.size());
         assertEquals(outgoingBookingDto.getId(), results.get(0).getId());
-    }
-
-    @Test
-    void testGetBookingsByOwnerAndState_invalidFromOrSize() {
-        assertThrows(ValidationException.class, () -> bookingService.getBookingsByOwnerAndState(user.getId(), "ALL", -1, 1));
     }
 
     @Test

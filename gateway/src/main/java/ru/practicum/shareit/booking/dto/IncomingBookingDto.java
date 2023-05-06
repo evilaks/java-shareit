@@ -8,6 +8,7 @@ import lombok.NoArgsConstructor;
 import javax.validation.constraints.Future;
 import javax.validation.constraints.FutureOrPresent;
 import javax.validation.constraints.NotEmpty;
+import javax.validation.constraints.Positive;
 import java.time.LocalDateTime;
 
 @Data
@@ -22,6 +23,7 @@ public class IncomingBookingDto {
     private LocalDateTime end;
     @NotEmpty
     private Long itemId;
+    @Positive
     private Long bookerId;
     private BookingStatus status;
 }
