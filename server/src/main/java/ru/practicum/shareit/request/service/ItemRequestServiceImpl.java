@@ -13,7 +13,6 @@ import ru.practicum.shareit.user.dto.UserDto;
 import ru.practicum.shareit.user.dto.UserDtoMapper;
 import ru.practicum.shareit.user.service.UserService;
 import ru.practicum.shareit.util.exception.NotFoundException;
-import ru.practicum.shareit.util.exception.ValidationException;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -34,11 +33,6 @@ public class ItemRequestServiceImpl implements ItemRequestService {
     public ItemRequestDto createItemRequest(Long userId, ItemRequestDto itemRequestDto) {
         // throws 404 if user not found
         UserDto userDto = userService.findById(userId);
-
-        // throws 400 if item request is not valid
-        if (!isValidItemRequest(itemRequestDto)) {
-            throw new ValidationException("Item request is not valid");
-        }
 
         ItemRequest itemRequest = itemRequestDtoMapper.toItemRequest(itemRequestDto, userDtoMapper.toUser(userDto));
         itemRequest.setCreated(LocalDateTime.now());
@@ -77,11 +71,5 @@ public class ItemRequestServiceImpl implements ItemRequestService {
         return itemRequestRepository.findById(id)
                 .map(i -> itemRequestDtoMapper.toItemRequestDto(i, i.getItems()))
                 .orElseThrow(() -> new NotFoundException("Item request not found"));
-    }
-
-    private Boolean isValidItemRequest(ItemRequestDto itemRequestDto) {
-        return itemRequestDto != null
-                && itemRequestDto.getDescription() != null
-                && itemRequestDto.getDescription().length() > 0;
     }
 }

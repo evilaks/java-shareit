@@ -52,17 +52,6 @@ public class ItemRequestControllerIntegrationTests {
     }
 
     @Test
-    public void testAddItemRequestWithWrongItemId() throws Exception {
-        mockMvc.perform(post("/requests")
-                        .header("X-Sharer-User-Id", 1L)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"desc\":100}"))
-                .andExpect(status().isBadRequest())
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-                .andExpect(jsonPath("$.error").value("Item request is not valid"));
-    }
-
-    @Test
     public void testAddItemRequestWithWrongUserId() throws Exception {
         mockMvc.perform(post("/requests")
                         .header("X-Sharer-User-Id", 99L)

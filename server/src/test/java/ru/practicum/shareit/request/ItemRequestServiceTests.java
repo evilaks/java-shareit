@@ -16,7 +16,6 @@ import ru.practicum.shareit.user.dto.UserDtoMapper;
 import ru.practicum.shareit.user.model.User;
 import ru.practicum.shareit.user.service.UserService;
 import ru.practicum.shareit.util.exception.NotFoundException;
-import ru.practicum.shareit.util.exception.ValidationException;
 
 import java.time.LocalDateTime;
 import java.util.*;
@@ -64,12 +63,6 @@ class ItemRequestServiceTests {
 
         ItemRequestDto createdItemRequestDto = itemRequestService.createItemRequest(1L, itemRequestDto);
         assertEquals(itemRequestDto, createdItemRequestDto);
-    }
-
-    @Test
-    void testCreateItemRequest_invalidRequest() {
-        ItemRequestDto invalidItemRequestDto = new ItemRequestDto(1L, "", null, new ArrayList<>());
-        assertThrows(ValidationException.class, () -> itemRequestService.createItemRequest(1L, invalidItemRequestDto));
     }
 
     @Test
