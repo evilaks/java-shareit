@@ -6,8 +6,10 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.shareit.user.client.UserClient;
 import ru.practicum.shareit.user.dto.UserDto;
+import ru.practicum.shareit.util.exception.BadRequestException;
 
 import javax.validation.Valid;
+import javax.validation.constraints.Positive;
 
 
 @Slf4j
@@ -21,11 +23,15 @@ public class UserController {
     @PostMapping()
     public ResponseEntity<Object> addUser(@RequestBody @Valid UserDto userDto) {
         log.debug("Received POST request to /users endpoint with User-object {}", userDto);
+        if (!isValidUser(userDto)) {
+            throw new BadRequestException("Invalid user: " + userDto);
+        }
         return userClient.add(userDto);
     }
 
     @PatchMapping("/{userId}")
-    public ResponseEntity<Object> updateUser(@PathVariable Long userId, @RequestBody UserDto userDto) {
+    public ResponseEntity<Object> updateUser(@Positive @PathVariable Long userId,
+                                             @RequestBody UserDto userDto) {
         log.debug("Received PATCH request to /users/{} endpoint with User-object {}", userId, userDto);
         return userClient.update(userId, userDto);
     }
@@ -37,16 +43,31 @@ public class UserController {
     }
 
     @GetMapping("/{userId}")
-    public ResponseEntity<Object> findUserById(@PathVariable Long userId) {
+    public ResponseEntity<Object> findUserById(@Positive @PathVariable Long userId) {
         log.debug("Received GET request to /users/{} endpoint", userId);
         return userClient.findById(userId);
     }
 
     @DeleteMapping("/{userId}")
-    public ResponseEntity<Void> deleteUserById(@PathVariable Long userId) {
+    public ResponseEntity<Void> deleteUserById(@Positive @PathVariable Long userId) {
         log.debug("Received DELETE request to /users/{} endpoint", userId);
         userClient.delete(userId);
         return ResponseEntity.ok().build();
+    }
+
+    private boolean isValidUser(UserDto userDto) {
+
+        // check if new user has proper username
+        if (userDto.getName() == null || userDto.getName().isBlank() || userDto.getName().isEmpty()) {
+            return false;
+        }
+
+        // check if new user has proper email
+        if (userDto.getEmail() == null || userDto.getEmail().isBlank() || userDto.getName().isEmpty()) {
+            return false;
+        }
+
+        return true;
     }
 
 }

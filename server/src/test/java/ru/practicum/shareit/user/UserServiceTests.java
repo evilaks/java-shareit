@@ -11,7 +11,6 @@ import ru.practicum.shareit.user.dto.UserDtoMapper;
 import ru.practicum.shareit.user.model.User;
 import ru.practicum.shareit.user.service.UserServiceImpl;
 import ru.practicum.shareit.user.storage.UserRepository;
-import ru.practicum.shareit.util.exception.BadRequestException;
 import ru.practicum.shareit.util.exception.NotFoundException;
 
 import java.util.Arrays;
@@ -84,12 +83,6 @@ class UserServiceTests {
 
         UserDto addedUserDto = userService.add(userDto);
         assertEquals(userDto, addedUserDto);
-    }
-
-    @Test
-    void testAdd_invalidUser() {
-        UserDto invalidUserDto = new UserDto(1L, "", "invalid.email");
-        assertThrows(BadRequestException.class, () -> userService.add(invalidUserDto));
     }
 
     @Test

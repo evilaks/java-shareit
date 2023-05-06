@@ -39,10 +39,8 @@ public class UserServiceImpl implements UserService {
     @Transactional
     @Override
     public UserDto add(UserDto userDto) {
-        if (this.isValidUser(userDto)) {
-            User userToAdd = userDtoMapper.toUser(userDto);
-            return userDtoMapper.toUserDto(userRepository.save(userToAdd));
-        } else throw new BadRequestException("Invalid user object received");
+        User userToAdd = userDtoMapper.toUser(userDto);
+        return userDtoMapper.toUserDto(userRepository.save(userToAdd));
     }
 
     @Transactional
@@ -73,21 +71,6 @@ public class UserServiceImpl implements UserService {
         if (this.doesExist(userId)) {
             userRepository.deleteById(userId);
         } else throw new NotFoundException("User with id=" + userId + " not found");
-    }
-
-    private boolean isValidUser(UserDto userDto) {
-
-        // check if new user has proper username
-        if (userDto.getName() == null || userDto.getName().isBlank() || userDto.getName().isEmpty()) {
-            return false;
-        }
-
-        // check if new user has proper email
-        if (userDto.getEmail() == null || userDto.getEmail().isBlank() || userDto.getName().isEmpty()) {
-            return false;
-        }
-
-        return true;
     }
 
     private boolean doesExist(Long userId) {
