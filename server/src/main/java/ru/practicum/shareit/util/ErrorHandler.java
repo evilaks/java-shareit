@@ -3,6 +3,7 @@ package ru.practicum.shareit.util;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
+import org.postgresql.util.PSQLException;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
@@ -16,35 +17,49 @@ public class ErrorHandler {
     @ExceptionHandler(BadRequestException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public ErrorResponse handleBadRequest(final BadRequestException e) {
-        log.warn("BadRequest exception caught");
+        log.warn("BadRequest exception caught: {}", e.getMessage());
         return new ErrorResponse(e.getMessage());
     }
 
     @ExceptionHandler(NotFoundException.class)
     @ResponseStatus(HttpStatus.NOT_FOUND)
     public ErrorResponse handleNotFound(final NotFoundException e) {
-        log.warn("NotFound exception caught");
+        log.warn("NotFound exception caught: {}", e.getMessage());
         return new ErrorResponse(e.getMessage());
     }
 
     @ExceptionHandler(ValidationException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public ErrorResponse handleValidationException(final ValidationException e) {
-        log.warn("Validation exception caught");
+        log.warn("Validation exception caught: {}", e.getMessage());
         return new ErrorResponse(e.getMessage());
     }
 
     @ExceptionHandler(ConflictException.class)
     @ResponseStatus(HttpStatus.CONFLICT)
     public ErrorResponse handleConflictException(final ConflictException e) {
-        log.warn("Conflict exception caught");
+        log.warn("Conflict exception caught: {}", e.getMessage());
         return new ErrorResponse(e.getMessage());
     }
 
     @ExceptionHandler(NotAllowedException.class)
     @ResponseStatus(HttpStatus.FORBIDDEN)
     public ErrorResponse handleNotAllowedException(final NotAllowedException e) {
-        log.warn("NotAllowed exception caught");
+        log.warn("NotAllowed exception caught: {}", e.getMessage());
+        return new ErrorResponse(e.getMessage());
+    }
+
+    @ExceptionHandler(PSQLException.class)
+    @ResponseStatus(HttpStatus.CONFLICT)
+    public ErrorResponse handlePSQLException(final PSQLException e) {
+        log.warn("SQL exception caught: {}", e.getMessage());
+        return new ErrorResponse(e.getMessage());
+    }
+
+    @ExceptionHandler(IllegalArgumentException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ErrorResponse handleIllegalArgumentException(final IllegalArgumentException e) {
+        log.warn("Illegal argument exception caught: {}", e.getMessage());
         return new ErrorResponse(e.getMessage());
     }
 
