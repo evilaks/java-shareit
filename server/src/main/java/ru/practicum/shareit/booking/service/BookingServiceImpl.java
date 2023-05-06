@@ -44,29 +44,26 @@ public class BookingServiceImpl implements BookingService {
         // throw 404 if item or user not found
         ItemWithBookingsDto itemDto = itemService.findById(incomingBookingDto.getItemId(), userId);
 
+        // check availability of item
+        if (!itemDto.getAvailable()) {
+            throw new ValidationException("Item is not available");
+        }
 
-        if (isValidBooking(incomingBookingDto)) {
+        Item item = itemRepository.findById(incomingBookingDto.getItemId()).orElse(null);
+        User booker = userRepository.findById(userId).orElse(null);
 
-            // check availability of item
-            if (!itemDto.getAvailable()) {
-                throw new ValidationException("Item is not available");
-            }
+        // check if booker is not owner of item
+        if (item.getOwner().getId().equals(userId)) {
+            throw new NotFoundException("Booker is owner of item");
+        }
 
-            Item item = itemRepository.findById(incomingBookingDto.getItemId()).orElse(null);
-            User booker = userRepository.findById(userId).orElse(null);
+        // make booking
+        Booking booking = bookingDtoMapper.toBooking(incomingBookingDto, item, booker);
+        booking.setStatus(BookingStatus.WAITING);
+        Booking savedBooking = bookingRepository.save(booking);
+        return bookingDtoMapper.toDto(savedBooking);
 
-            // check if booker is not owner of item
-            if (item.getOwner().getId().equals(userId)) {
-                throw new NotFoundException("Booker is owner of item");
-            }
 
-            // make booking
-            Booking booking = bookingDtoMapper.toBooking(incomingBookingDto, item, booker);
-            booking.setStatus(BookingStatus.WAITING);
-            Booking savedBooking = bookingRepository.save(booking);
-            return bookingDtoMapper.toDto(savedBooking);
-
-        } else throw new ValidationException("Invalid booking received");
 
     }
 
@@ -127,11 +124,6 @@ public class BookingServiceImpl implements BookingService {
         // throw 404 if user not found
         userService.findById(userId);
 
-        // validate from and size
-        if (from < 0 || size < 1) {
-            throw new ValidationException("Invalid from or size");
-        }
-
         // convert from to page
         int page = from > 0 ? from / size : 0;
 
@@ -188,11 +180,6 @@ public class BookingServiceImpl implements BookingService {
         // throw 404 if user not found
         userService.findById(ownerId);
 
-        // validate from and size
-        if (from < 0 || size < 1) {
-            throw new ValidationException("Invalid from or size");
-        }
-
         // convert from to page
         int page = from > 0 ? from / size : 0;
 
@@ -242,15 +229,5 @@ public class BookingServiceImpl implements BookingService {
                 throw new ValidationException("Unknown state: " + state);
         }
 
-    }
-
-    private boolean isValidBooking(IncomingBookingDto incomingBookingDto) {
-        return incomingBookingDto.getStart() != null
-                && incomingBookingDto.getEnd() != null
-                && incomingBookingDto.getItemId() != null
-                // starts before ends
-                && incomingBookingDto.getStart().isBefore(incomingBookingDto.getEnd())
-                // starts after now
-                && incomingBookingDto.getStart().isAfter(LocalDateTime.now());
     }
 }

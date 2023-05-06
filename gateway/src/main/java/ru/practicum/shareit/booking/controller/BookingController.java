@@ -12,6 +12,7 @@ import ru.practicum.shareit.util.exception.BadRequestException;
 
 import javax.validation.constraints.Positive;
 import javax.validation.constraints.PositiveOrZero;
+import java.time.LocalDateTime;
 
 @Slf4j
 @RestController
@@ -25,25 +26,29 @@ public class BookingController {
 
     // POST /bookings
     @PostMapping
-    public ResponseEntity<Object> createBooking(@RequestHeader(value = "X-Sharer-User-Id") Long userId,
+    public ResponseEntity<Object> createBooking(@Positive @RequestHeader(value = "X-Sharer-User-Id") Long userId,
                                                 @RequestBody IncomingBookingDto incomingBookingDto) {
         log.debug("Creating booking {}, userId={}", incomingBookingDto, userId);
+        if (!isValidBooking(incomingBookingDto)) {
+            throw new BadRequestException("Invalid booking: " + incomingBookingDto);
+        }
         return bookingClient.createBooking(userId, incomingBookingDto);
     }
 
     // PATCH /bookings/{bookingId}?approved={approved}
     @PatchMapping("/{bookingId}")
-    public ResponseEntity<Object> updateBookingApproval(@RequestHeader(value = "X-Sharer-User-Id") Long userId,
-                                                        @PathVariable Long bookingId,
+    public ResponseEntity<Object> updateBookingApproval(@Positive @RequestHeader(value = "X-Sharer-User-Id") Long userId,
+                                                        @Positive @PathVariable Long bookingId,
                                                         @RequestParam Boolean approved) {
+
         log.debug("Update booking approval {}, userId={}", bookingId, userId);
         return bookingClient.updateBookingApproval(userId, bookingId, approved);
     }
 
     // GET /bookings/{bookingId}
     @GetMapping("/{bookingId}")
-    public ResponseEntity<Object> getBookingById(@RequestHeader(value = "X-Sharer-User-Id") Long userId,
-                                                 @PathVariable Long bookingId) {
+    public ResponseEntity<Object> getBookingById(@Positive @RequestHeader(value = "X-Sharer-User-Id") Long userId,
+                                                 @Positive @PathVariable Long bookingId) {
         log.debug("Get booking {}, userId={}", bookingId, userId);
         return bookingClient.getBookingById(userId, bookingId);
     }
@@ -70,6 +75,16 @@ public class BookingController {
                 .orElseThrow(() -> new BadRequestException("Unknown state: " + stateParam));
         log.debug("Get booking with state {}, ownerId={}, from={}, size={}", stateParam, ownerId, from, size);
         return bookingClient.getBookingsByOwnerAndState(ownerId, state, from, size);
+    }
+
+    private boolean isValidBooking(IncomingBookingDto incomingBookingDto) {
+        return incomingBookingDto.getStart() != null
+                && incomingBookingDto.getEnd() != null
+                && incomingBookingDto.getItemId() != null
+                // starts before ends
+                && incomingBookingDto.getStart().isBefore(incomingBookingDto.getEnd())
+                // starts after now
+                && incomingBookingDto.getStart().isAfter(LocalDateTime.now());
     }
 }
 
